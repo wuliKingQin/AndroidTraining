@@ -52,7 +52,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
         activitiesRlv.apply {
             layoutManager = LinearLayoutManager(context)
-            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL))
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             adapter = mAdapter
         }
         mAdapter.addAll(activityList)
