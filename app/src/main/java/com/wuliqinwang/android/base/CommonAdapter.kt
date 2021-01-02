@@ -17,7 +17,7 @@ import androidx.viewbinding.ViewBinding
  * @CreateDate: 2019-10-13
  * @Version: 1.0.0
  */
-internal abstract class CommonAdapter<T>(dataSet: ArrayList<T>? = null):
+abstract class CommonAdapter<T>(dataSet: ArrayList<T>? = null):
     RecyclerView.Adapter<CommonViewHolder>(){
 
     // 数据集合

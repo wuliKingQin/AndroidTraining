@@ -82,6 +82,20 @@ fun String?.getConstructor(vararg paramTypes: Class<*>): Constructor<*>? {
     return findClass()?.getDeclaredConstructor(*paramTypes)
 }
 
+fun Class<*>?.getMethodEx(methodName: String, vararg paramTypes: Class<*>): Method? {
+    this ?: return null
+    return tryCatch { isError, _ ->
+        if(!isError) {
+            getDeclaredMethod(methodName, *paramTypes).let {
+                it.isAccessible = true
+                it
+            }
+        } else {
+            null
+        }
+    }
+}
+
 // DES: 用于处理异常信息
 inline fun <T> tryCatch(action: (isError: Boolean, errorInfo: Exception?)->T? ): T? {
     return try {

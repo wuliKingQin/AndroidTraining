@@ -19,6 +19,7 @@
         <!--用于插件使用傀儡界面-->
         <activity android:name=".plugin.DummyPluginActivity" />
         <activity android:name=".plugin.PluginTestActivity" />
+        <activity android:name=".bitmap.BitmapOptimizationActivity" />
     </application>
 
 </manifest>

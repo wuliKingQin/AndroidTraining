@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
+import com.wuliqinwang.android.getMethodEx
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -25,12 +26,31 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
     // DES: 实例化ViewBinding
     @Suppress("UNCHECKED_CAST")
     private fun instanceViewBinding(): T? {
-        return ((javaClass.genericSuperclass as? ParameterizedType)
-            ?.actualTypeArguments?.get(0) as? Class<*>)
-            ?.getDeclaredMethod("inflate", LayoutInflater::class.java)?.let {
-                it.isAccessible = true
-                it.invoke(null, layoutInflater)
-            } as? T
+        return findTargetClass(javaClass, ViewBinding::class.java)
+            .getMethodEx("inflate", LayoutInflater::class.java)
+            ?.invoke(null, layoutInflater) as? T
+    }
+
+    // 找目标ViewBinding的class，从范型里面
+    private fun findTargetClass(findClass: Class<*>?, targetClass: Class<*>): Class<*>? {
+        return (findClass?.genericSuperclass as? ParameterizedType)?.actualTypeArguments?.let {
+            var targetClassEx: Class<*>? = null
+            for (type in it) {
+                val tempClass = type as? Class<*>
+                (tempClass)?.genericInterfaces?.let { inters ->
+                    for(inter in inters) {
+                        if (inter == targetClass) {
+                            targetClassEx = tempClass
+                            break
+                        }
+                    }
+                }
+                if (targetClassEx != null) {
+                    break
+                }
+            }
+            targetClassEx ?: findTargetClass(findClass.superclass, targetClass)
+        }
     }
 
     // DES: 为视图绑定数据
