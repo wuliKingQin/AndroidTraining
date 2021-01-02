@@ -1,0 +1,4 @@
+include ':act-register-annotation'
+include ':act-register-compiler'
+include ':app'
+rootProject.name = "AndroidTraining"
