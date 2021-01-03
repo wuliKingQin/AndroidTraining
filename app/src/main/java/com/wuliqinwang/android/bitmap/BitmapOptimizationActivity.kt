@@ -3,6 +3,7 @@ package com.wuliqinwang.android.bitmap
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
@@ -27,6 +28,7 @@ class BitmapOptimizationActivity: AbstractListActivity<Bitmap>(){
         position: Int
     ) {
         if (viewBinding is RvBitmapOptimizationItemBinding) {
+            Log.d("test===", "bitmap size=${currentData.width * currentData.height * currentData.config.ordinal}")
             viewBinding.iconIv.setImageBitmap(currentData)
         }
     }
@@ -34,7 +36,7 @@ class BitmapOptimizationActivity: AbstractListActivity<Bitmap>(){
     override fun onLoadListData(savedInstanceState: Bundle?) {
         for (index in 0 until 100) {
             addListData(
-                BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher),
+                BitmapUtils.getBitmap(this, R.mipmap.ic_launcher, 20, 20),
                 isRefresh = true
             )
         }
