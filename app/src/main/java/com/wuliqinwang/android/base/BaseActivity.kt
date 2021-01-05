@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
-import com.wuliqinwang.android.getMethodEx
+import com.wuliqinwang.android.getObjMethod
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -27,7 +27,7 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
     @Suppress("UNCHECKED_CAST")
     private fun instanceViewBinding(): T? {
         return findTargetClass(javaClass, ViewBinding::class.java)
-            .getMethodEx("inflate", LayoutInflater::class.java)
+            .getObjMethod("inflate", LayoutInflater::class.java)
             ?.invoke(null, layoutInflater) as? T
     }
 

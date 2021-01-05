@@ -12,7 +12,7 @@ import com.wuliqinwang.android.R
 import com.wuliqinwang.android.base.AbstractListActivity
 import com.wuliqinwang.android.databinding.RvBitmapOptimizationItemBinding
 
-@ActRegister(name = "Bitmap优化相关", position = 10)
+@ActRegister(name = "Bitmap优化相关", position = 3)
 class BitmapOptimizationActivity: AbstractListActivity<Bitmap>(){
 
     override fun createItemViewBinding(

@@ -20,6 +20,7 @@
         <activity android:name=".plugin.DummyPluginActivity" />
         <activity android:name=".plugin.PluginTestActivity" />
         <activity android:name=".bitmap.BitmapOptimizationActivity" />
+        <activity android:name=".hotfix.HotFixActivity" />
     </application>
 
 </manifest>

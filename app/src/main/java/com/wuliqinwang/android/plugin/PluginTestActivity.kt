@@ -7,7 +7,7 @@ import com.wuliqinwang.android.databinding.ActivityPluginTestBinding
 import com.wuliqinwang.android.startActivityEx
 
 // 用于测试Activity的插件化
-@ActRegister(name = "Activity插件化测试")
+@ActRegister(name = "Activity插件化测试", position = 1)
 class PluginTestActivity: BaseActivity<ActivityPluginTestBinding>(){
 
     override fun ActivityPluginTestBinding.onBindDataForView(savedInstanceState: Bundle?) {
