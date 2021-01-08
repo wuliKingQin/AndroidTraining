@@ -6,6 +6,11 @@ plugins {
 
 apply plugin: com.wuliqinwang.patch.PatchPlugin
 
+hotFixPatch {
+    debugOn true
+    applicationName 'com.wuliqinwang.android.TrainingApplication'
+}
+
 android {
     compileSdkVersion COMPILE_SDK
     buildToolsVersion BUILD_TOOLS

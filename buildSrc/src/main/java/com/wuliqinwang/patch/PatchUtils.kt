@@ -28,9 +28,9 @@ object PatchUtils {
         val md5Map = HashMap<String, String>()
         hexFile ?: return md5Map
         BufferedReader(InputStreamReader(FileInputStream(hexFile))).use { br ->
-            var line: String
+            var line: String?
             while (br.readLine().also { line = it } != null) {
-                line.split(":").apply {
+                line?.split(":")?.apply {
                     if(size >= 2) {
                         md5Map[get(0)] = get(1)
                     }
@@ -43,9 +43,8 @@ object PatchUtils {
     // DES: 写入Md5值到文件
     fun writeMd5HexToFile(
         md5HexMap: Map<String, String?>,
-        md5HexFile: File?
+        md5HexFile: File
     ) {
-        md5HexFile ?: return
         FileOutputStream(md5HexFile).use {
             md5HexMap.forEach { (key, value) ->
                 it.write("$key:$value\n".toByteArray())

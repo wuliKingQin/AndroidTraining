@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.Message
+import android.util.Log
 import com.wuliqinwang.android.getFieldValue
 import com.wuliqinwang.android.setFieldValue
 import java.lang.Exception
@@ -88,6 +89,7 @@ object HookHelper {
                 }
                 false
             }
+            Log.d("test", "=============")
             mHandleObj?.javaClass?.superclass?.setFieldValue("mCallback", callback, mHandleObj)
         }catch (e: Exception) {
             e.printStackTrace()

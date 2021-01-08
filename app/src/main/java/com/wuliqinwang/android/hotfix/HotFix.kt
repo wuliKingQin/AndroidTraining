@@ -1,6 +1,7 @@
 package com.wuliqinwang.android.hotfix
 
 import android.content.Context
+import android.util.Log
 import com.wuliqinwang.android.getFieldValue
 import com.wuliqinwang.android.getObjMethod
 import com.wuliqinwang.android.setFieldValue

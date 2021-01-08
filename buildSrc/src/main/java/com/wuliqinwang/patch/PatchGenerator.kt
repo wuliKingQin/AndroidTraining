@@ -34,9 +34,7 @@ class PatchGenerator(
     }
     // DES: 记录md5的文件
     private val mMd5File by lazy {
-        File(outputDir,
-            MD5_FILE_NAME
-        )
+        File(outputDir, MD5_FILE_NAME)
     }
     private val mOlMd5Map by lazy {
         if(mMd5File.exists()) {
@@ -47,31 +45,32 @@ class PatchGenerator(
     }
     // DES: 用于存放需要热修复的Class文件
     private val mJarFile by lazy {
-        File(outputDir,
-            PATCH_CLASS_FILE_NAME
-        )
+        File(outputDir, PATCH_CLASS_FILE_NAME)
     }
     // DES: 热修复包文件
     private val mPatchFile by lazy {
-        File(outputDir,
-            PATCH_DEX_FILE_NAME
-        )
+        File(outputDir, PATCH_DEX_FILE_NAME)
     }
     // DES: 保存一个全局的Jar输入出流对象
     private val mJarOutputStream by lazy {
-        JarOutputStream(FileOutputStream(mJarFile))
+        JarOutputStream(FileOutputStream(mJarFile)).apply {
+        }
     }
 
     // DES: 把不相同的Md5的class加入到热修复包文件里
     fun addClassToJarFile(className: String, md5Hex: String?, codeByteArray: ByteArray) {
         if (mOlMd5Map.isEmpty()) return
         val oldMd5 = mOlMd5Map[className]
+        println("========key=${className}======")
+        println("========new value=${md5Hex}===========")
+        println("========old value=${oldMd5}===========")
         if (oldMd5 == null || oldMd5 != md5Hex) {
             try {
-                mJarOutputStream.apply {
-                    putNextEntry(JarEntry(className))
-                    write(codeByteArray)
-                    closeEntry()
+                mJarOutputStream.let {
+                    println("==========start write============")
+                    it.putNextEntry(JarEntry(className))
+                    it.write(codeByteArray)
+                    it.closeEntry()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -83,8 +82,10 @@ class PatchGenerator(
     fun generate(md5HexMap: Map<String, String>) {
         // DES: 将新的md5信息缓存到指定文件
         PatchUtils.writeMd5HexToFile(md5HexMap, mMd5File)
+        println("start generate patch =${mJarFile.exists()}======================")
         // DES: 如果不存在，则不生成热修复包
         if (!mJarFile.exists()) return
+        println("start generate patch file======================")
         try {
             mJarOutputStream.close()
             // DES: 因为dx命令在 sdk中，获得sdk目录
@@ -97,11 +98,12 @@ class PatchGenerator(
                 System.getenv("ANDROID_HOME")
             }
             // DES: windows使用 dx.bat命令,linux/mac使用 dx命令
-            val dxSuffix = if(Os.isFamily(Os.FAMILY_WINDOWS)) ".dat" else ""
+            val dxSuffix = if(Os.isFamily(Os.FAMILY_WINDOWS)) ".bat" else ""
             // 执行：dx --dex --output=output.jar input.jar
             val dxPath = "${sdkDir}/build-tools/${mBuildToolVersion}/dx${dxSuffix}"
             val outputPatch = "--output=${mPatchFile.absolutePath}"
             val cmd = "$dxPath --dex $outputPatch ${mJarFile.absolutePath}"
+            println("dex cmd path=$cmd")
             val process = Runtime.getRuntime().exec(cmd)
             process.waitFor()
             mJarFile.delete()

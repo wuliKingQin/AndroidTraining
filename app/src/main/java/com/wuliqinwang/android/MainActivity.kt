@@ -1,6 +1,7 @@
 package com.wuliqinwang.android
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -63,6 +64,7 @@ class MainActivity : AbstractListActivity<MainActivity.ActivityBo>() {
         mActivityFactory.activities.forEach {
             activityList.add(ActivityBo(it.key, it.value))
         }
+        Log.e("log", "onLoadListData: " )
         setListData(activityList)
     }
 }
