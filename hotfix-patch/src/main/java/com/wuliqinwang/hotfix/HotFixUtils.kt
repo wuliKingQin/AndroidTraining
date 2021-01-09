@@ -3,6 +3,7 @@ package com.wuliqinwang.hotfix
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import java.io.*
 
 // 用于热修复的工具类
@@ -48,6 +49,7 @@ object HotFixUtils {
                     }
                 }
             }
+            Log.d("test===", "pack file exist=${packFile.exists()}")
             fileList.add(packFile)
         } catch (e: IOException) {
             e.printStackTrace()

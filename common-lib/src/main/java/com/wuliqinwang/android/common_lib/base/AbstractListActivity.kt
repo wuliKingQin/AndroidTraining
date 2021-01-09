@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.wuliqinwang.android.databinding.ActivityAbstractListBinding
+import com.wuliqinwang.android.common_lib.databinding.ActivityAbstractListBinding
 
 
 // 封装列表视图，减少重复类的创建

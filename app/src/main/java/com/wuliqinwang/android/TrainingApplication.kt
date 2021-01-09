@@ -2,6 +2,7 @@ package com.wuliqinwang.android
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.wuliqinwang.hotfix.HotFixUtils
 import java.io.File
 

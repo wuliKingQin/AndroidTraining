@@ -3,6 +3,7 @@ package com.wuliqinwang.android.common_lib.base
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import androidx.viewbinding.ViewBinding

@@ -8,7 +8,6 @@ android {
     buildToolsVersion BUILD_TOOLS
 
     defaultConfig {
-        applicationId "com.wuliqinwang.android"
         minSdkVersion MIN_SDK
         targetSdkVersion TARGET_SDK
         versionCode VERSION_CODE as int
@@ -23,6 +22,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    viewBinding {
+        enabled = true
     }
 }
 

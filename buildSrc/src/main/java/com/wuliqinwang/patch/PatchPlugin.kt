@@ -5,13 +5,12 @@ import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.tasks.R8Task
 import com.android.utils.FileUtils
-import jdk.internal.org.objectweb.asm.*
 import org.apache.commons.compress.utils.IOUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskInputs
-import org.objectweb.asm.Opcodes
+import org.objectweb.asm.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -156,10 +155,11 @@ class PatchPlugin : Plugin<Project> {
         println("start for each classes===================")
         val generator = PatchGenerator(project, outputDir)
         val classFiles = taskInputs.files.files
+        println("hotFixPatch.applicationName=${hotFixPatch.applicationName}")
         val applicationName = hotFixPatch.applicationName.replace(
-            "\\.",
-            Matcher.quoteReplacement(File.separator)
+            ".", Matcher.quoteReplacement(File.separator)
         )
+        println("applicationName=$applicationName")
         val md5Map = HashMap<String, String>(classFiles.size)
         for (file in classFiles) {
             fileForEach(file) { targetFile ->
@@ -221,10 +221,10 @@ class PatchPlugin : Plugin<Project> {
         handleCallback: (String, String, ByteArray) -> Unit
     ) {
         val className = file.absolutePath.split(dirName)[1].substring(1)
-        println(className)
         if (!isClassHandle(applicationName, className)) {
             return
         }
+        println(className)
         try {
             // DES: 执行插桩操作，解决类加载时检验失败的问题
             val codeByteArray = FileInputStream(file).use {
