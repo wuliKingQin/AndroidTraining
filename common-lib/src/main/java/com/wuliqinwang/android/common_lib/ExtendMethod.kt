@@ -32,11 +32,17 @@ fun String?.getFieldValue(fieldName: String, instanceObj: Any? = null): Any? {
     return getField(fieldName)?.get(instanceObj)
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <T> Any?.getFieldValue(fieldName: String): T? {
+    this ?: return null
+    return this::class.java.getFieldValue(fieldName, this) as? T
+}
+
 // DES: 获取属性的值
 fun Class<*>?.getFieldValue(fieldName: String, instanceObj: Any? = null): Any? {
     this ?: return null
     return tryCatch { isError, _ ->
-        if(!isError) {
+        if (!isError) {
             getObjField(fieldName)?.get(instanceObj)
         } else {
             null
@@ -50,10 +56,16 @@ fun String?.setFieldValue(fieldName: String, value: Any?, instanceObj: Any? = nu
 }
 
 // DES: 设置属性值
-fun Class<*>?.setFieldValue(fieldName: String, value: Any?, instanceObj: Any ?= null) {
+fun Any?.setFieldValue(fieldName: String, value: Any?) {
+    this ?: return
+    this::class.java.setFieldValue(fieldName, value, this)
+}
+
+// DES: 设置属性值
+fun Class<*>?.setFieldValue(fieldName: String, value: Any?, instanceObj: Any? = null) {
     this ?: return
     tryCatch { isError, _ ->
-        if(!isError) {
+        if (!isError) {
             getObjField(fieldName)
                 ?.set(instanceObj, value)
         }
@@ -65,9 +77,27 @@ fun String?.setStaticFieldValue(fieldName: String, value: Any?) {
     getField(fieldName)?.set(null, value)
 }
 
+// DES: 设置静态的属性值
+fun Any?.setStaticFieldValue(fieldName: String, value: Any?) {
+    this ?: return
+    this::class.java.setFieldValue(fieldName, value, null)
+}
+
 // DES: 获取类的方法
 fun String?.getMethod(methodName: String, vararg paramTypes: Class<*>): Method? {
     return findClass()?.getDeclaredMethod(methodName, *paramTypes)
+}
+
+// 调用方法
+@Suppress("UNCHECKED_CAST")
+fun <T> Any?.invokeMethod(
+    methodName: String,
+    params: Map<Class<*>, Any?>,
+    isStaticMethod: Boolean = false
+): T? {
+    this ?: return null
+    return this::class.java.getObjMethod(methodName, *params.keys.toTypedArray())
+        ?.invoke(if (isStaticMethod) null else this, *params.values.toTypedArray()) as? T
 }
 
 // DES: 获取构造器
@@ -93,7 +123,7 @@ fun Class<*>?.getObjField(fieldName: String): Field? {
 fun Class<*>?.getObjMethod(methodName: String, vararg paramTypes: Class<*>): Method? {
     this ?: return null
     var tempMethod: Method? = null
-    for(method in declaredMethods) {
+    for (method in declaredMethods) {
         if (method.name == methodName && method.parameterTypes.contentDeepEquals(paramTypes)) {
             tempMethod = method
             tempMethod.isAccessible = true
@@ -104,10 +134,10 @@ fun Class<*>?.getObjMethod(methodName: String, vararg paramTypes: Class<*>): Met
 }
 
 // DES: 用于处理异常信息
-inline fun <T> tryCatch(action: (isError: Boolean, errorInfo: Exception?)->T? ): T? {
+inline fun <T> tryCatch(action: (isError: Boolean, errorInfo: Exception?) -> T?): T? {
     return try {
         action(false, null)
-    } catch (e: Exception){
+    } catch (e: Exception) {
         e.printStackTrace()
         Log.d("training====", e.message.toString())
         action(true, e)
@@ -115,7 +145,7 @@ inline fun <T> tryCatch(action: (isError: Boolean, errorInfo: Exception?)->T? ):
 }
 
 // 启动界面
-fun Activity?.startActivityEx(targetClass: Class<*>, action: Intent.()-> Unit = {}) {
+fun Activity?.startActivityEx(targetClass: Class<*>, action: Intent.() -> Unit = {}) {
     this ?: return
     startActivity(Intent(this, targetClass).apply(action))
 }

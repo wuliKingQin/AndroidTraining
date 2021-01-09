@@ -1,7 +1,6 @@
 package com.wuliqinwang.android.bitmap
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,7 +8,7 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.wuliqinwang.act.register.annotation.ActRegister
 import com.wuliqinwang.android.R
-import com.wuliqinwang.android.base.AbstractListActivity
+import com.wuliqinwang.android.common_lib.base.AbstractListActivity
 import com.wuliqinwang.android.databinding.RvBitmapOptimizationItemBinding
 
 @ActRegister(name = "Bitmap优化相关", position = 3)

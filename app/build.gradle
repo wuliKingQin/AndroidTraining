@@ -59,6 +59,7 @@ dependencies {
     implementation rootProject.ext.dependencies['support-v4']
     implementation project(path: ':act-register-annotation')
     implementation project(path: ':hotfix-patch')
+    implementation project(path: ':common-lib')
     kapt project(path: ':act-register-compiler')
 }
 

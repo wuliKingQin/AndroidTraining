@@ -1,8 +1,7 @@
 package com.wuliqinwang.android.plugin
 
 import android.os.Bundle
-import com.wuliqinwang.act.register.annotation.ActRegister
-import com.wuliqinwang.android.base.BaseActivity
+import com.wuliqinwang.android.common_lib.base.BaseActivity
 import com.wuliqinwang.android.databinding.ActivityPluginDummyBinding
 
 /**

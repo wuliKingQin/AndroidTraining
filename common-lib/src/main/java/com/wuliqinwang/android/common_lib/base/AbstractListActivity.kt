@@ -1,4 +1,4 @@
-package com.wuliqinwang.android.base
+package com.wuliqinwang.android.common_lib.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
