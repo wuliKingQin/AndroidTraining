@@ -3,9 +3,10 @@ package com.wuliqinwang.hotfix
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import com.wuliqinwang.android.getFieldValue
-import com.wuliqinwang.android.invokeMethod
-import com.wuliqinwang.android.setFieldValue
+import android.util.Log
+import com.wuliqinwang.android.common_lib.getFieldValue
+import com.wuliqinwang.android.common_lib.invokeMethod
+import com.wuliqinwang.android.common_lib.setFieldValue
 import java.io.File
 
 // 热修复需要替换的dexElements的工具类
@@ -67,8 +68,8 @@ interface IDexElement {
         }
         if (newElements != null && patchDexElements != null) {
             // 将热修复包优先拷贝到数组中，在将老得拷贝到新数组使其加载类时优先加载热修复包里的类
-            System.arraycopy(newElements, 0, patchDexElements, 0, patchDexElementSize)
-            System.arraycopy(newElements, patchDexElementSize, oldDexElements, 0, oldDexElementSize)
+            System.arraycopy(patchDexElements, 0, newElements, 0, patchDexElementSize)
+            System.arraycopy(oldDexElements, 0, newElements, patchDexElementSize, oldDexElementSize)
             // 替换新的元素内容
             pathList.setFieldValue("dexElements", newElements)
         }
@@ -91,18 +92,25 @@ class V23: IDexElement {
         optimizedDirectory: File,
         suppressedExceptions: java.util.ArrayList<Exception>
     ): Array<*>? {
+        Log.d("test===", "V23 makeDexElements")
         return dexPathList.invokeMethod<Array<*>>(
             "makePathElements",
-            hashMapOf(
-                List::class.java to pathEntries,
-                File::class.java to optimizedDirectory,
-                List::class.java to suppressedExceptions
-            )
+            arrayListOf(
+                List::class.java,
+                File::class.java,
+                List::class.java
+            ),
+            arrayListOf(
+                pathEntries,
+                optimizedDirectory,
+                suppressedExceptions
+            ),
+            isStaticMethod = true
         )
     }
 }
 
-// 兼容版本19
+// 兼容版本19到22版本
 class V19: IDexElement {
     override fun makeDexElements(
         dexPathList: Any?,
@@ -110,18 +118,25 @@ class V19: IDexElement {
         optimizedDirectory: File,
         suppressedExceptions: java.util.ArrayList<Exception>
     ): Array<*>? {
+        Log.d("test===", "V19 makeDexElements")
         return dexPathList.invokeMethod<Array<*>>(
             "makeDexElements",
-            hashMapOf(
-                ArrayList::class.java to pathEntries,
-                File::class.java to optimizedDirectory,
-                ArrayList::class.java to suppressedExceptions
-            )
+            arrayListOf(
+                ArrayList::class.java,
+                File::class.java,
+                ArrayList::class.java
+            ),
+            arrayListOf(
+                pathEntries,
+                optimizedDirectory,
+                suppressedExceptions
+            ),
+            isStaticMethod = true
         )
     }
 }
 
-// 兼容版本14
+// 兼容版本14到18都是
 class V14: IDexElement {
 
     override fun makeDexElements(
@@ -130,13 +145,18 @@ class V14: IDexElement {
         optimizedDirectory: File,
         suppressedExceptions: java.util.ArrayList<Exception>
     ): Array<*>? {
+        Log.d("test===", "V14 makeDexElements")
         return dexPathList.invokeMethod<Array<*>>(
             "makeDexElements",
-            hashMapOf(
-                ArrayList::class.java to pathEntries,
-                File::class.java to optimizedDirectory
-            )
+            arrayListOf(
+                ArrayList::class.java,
+                File::class.java
+            ),
+            arrayListOf(
+                pathEntries,
+                optimizedDirectory
+            ),
+            isStaticMethod = true
         )
     }
-
 }

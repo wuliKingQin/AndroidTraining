@@ -1,10 +1,9 @@
 package com.wuliqinwang.android.hotfix
 
 import android.content.Context
-import android.util.Log
-import com.wuliqinwang.android.getFieldValue
-import com.wuliqinwang.android.getObjMethod
-import com.wuliqinwang.android.setFieldValue
+import com.wuliqinwang.android.common_lib.getFieldValue
+import com.wuliqinwang.android.common_lib.getObjMethod
+import com.wuliqinwang.android.common_lib.setFieldValue
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Array

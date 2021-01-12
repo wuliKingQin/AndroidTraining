@@ -6,8 +6,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.util.Log
-import com.wuliqinwang.android.getFieldValue
-import com.wuliqinwang.android.setFieldValue
+import com.wuliqinwang.android.common_lib.getFieldValue
+import com.wuliqinwang.android.common_lib.setFieldValue
 import java.lang.Exception
 import java.lang.reflect.Proxy
 

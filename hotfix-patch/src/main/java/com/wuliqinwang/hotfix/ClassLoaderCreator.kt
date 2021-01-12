@@ -3,8 +3,8 @@ package com.wuliqinwang.hotfix
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import com.wuliqinwang.android.getFieldValue
-import com.wuliqinwang.android.setFieldValue
+import com.wuliqinwang.android.common_lib.getFieldValue
+import com.wuliqinwang.android.common_lib.setFieldValue
 import dalvik.system.DexFile
 import dalvik.system.PathClassLoader
 import java.io.File
