@@ -124,12 +124,6 @@ fun Class<*>?.getObjField(fieldName: String): Field? {
 fun Class<*>?.getObjMethod(methodName: String, vararg paramTypes: Class<*>): Method? {
     this ?: return null
     var tempMethod: Method? = null
-    for (method in declaredMethods) {
-        if (method.name == methodName) {
-            method.parameterTypes.forEach {
-            }
-        }
-    }
     try {
         tempMethod = getDeclaredMethod(methodName, *paramTypes)
         if (!tempMethod.isAccessible) {
