@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
-import com.wuliqinwang.android.getObjMethod
+import com.wuliqinwang.android.common_lib.getObjMethod
 import java.lang.reflect.ParameterizedType
 
 /**
@@ -13,12 +13,12 @@ import java.lang.reflect.ParameterizedType
 abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
 
     // DES: 保存获取视图对象
-    lateinit var viewHolder: T
-        private set
+    protected val viewHolder by lazy {
+        instanceViewBinding()!!
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewHolder = instanceViewBinding()!!
         setContentView(viewHolder.root)
         viewHolder.onBindDataForView(savedInstanceState)
     }

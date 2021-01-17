@@ -49,7 +49,6 @@ object HotFixUtils {
                     }
                 }
             }
-            Log.d("test===", "pack file exist=${packFile.exists()}")
             fileList.add(packFile)
         } catch (e: IOException) {
             e.printStackTrace()

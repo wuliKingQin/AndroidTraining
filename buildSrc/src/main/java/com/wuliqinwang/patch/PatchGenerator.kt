@@ -61,6 +61,7 @@ class PatchGenerator(
     fun addClassToJarFile(className: String, md5Hex: String?, codeByteArray: ByteArray) {
         if (mOlMd5Map.isEmpty()) return
         val oldMd5 = mOlMd5Map[className]
+        println("className=${className} oldMd5=${oldMd5} md5Hex=$md5Hex")
         if (oldMd5 == null || oldMd5 != md5Hex) {
             try {
                 mJarOutputStream.let {

@@ -4,12 +4,15 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.tasks.R8Task
+import com.android.dex.Dex
+import com.android.dx.dex.file.DexFile
 import com.android.utils.FileUtils
 import org.apache.commons.compress.utils.IOUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.TaskInputs
+import org.gradle.api.tasks.TaskOutputs
 import org.objectweb.asm.*
 import java.io.File
 import java.io.FileInputStream
@@ -75,7 +78,24 @@ class PatchPlugin : Plugin<Project> {
             proguardTask,
             mappingBackFile
         ) { taskInputs ->
-            doPatchDexFile(project, taskInputs, patchOutputDir, hotFixPatch, variant)
+            // DES: 插桩
+            forEachFiles(
+                hotFixPatch.applicationName,
+                variant.dirName,
+                taskInputs.files.files,
+                isInsertCode = true
+            )
+        }
+        // DES: 混淆之后执行打包
+        proguardTask?.doLast {
+            for (file in it.outputs.files.files) {
+                fileForEach(file) { targetFile ->
+                    if (targetFile.name.endsWith(".dex")) {
+                        println("targetFile dex file=${targetFile.name}")
+                    }
+                }
+            }
+            doPatchDexFile(project, it.outputs, patchOutputDir, hotFixPatch, variant)
         }
         // DES: 添加之前的混淆文件
         applyTestedMapping(proguardTask as? R8Task, mappingBackFile)
@@ -88,7 +108,7 @@ class PatchPlugin : Plugin<Project> {
         mappingBackFile: File,
         action: (TaskInputs) -> Unit
     ) {
-        proguardTask?.doFirst {
+        proguardTask?.doLast {
             println("start minifyDebugWithR8===================")
             for (file in it.outputs.files.files) {
                 if (file.name.endsWith(MAPPING_FILE_NAME)) {
@@ -102,6 +122,7 @@ class PatchPlugin : Plugin<Project> {
                     break
                 }
             }
+            // DES: 混淆之前执行插桩
             action(it.inputs)
         }
     }
@@ -147,34 +168,49 @@ class PatchPlugin : Plugin<Project> {
     // DES: 做生成补丁包的开始方法
     private fun doPatchDexFile(
         project: Project,
-        taskInputs: TaskInputs,
+        taskOutputs: TaskOutputs,
         outputDir: File,
         hotFixPatch: HotFixExtension,
         variant: ApplicationVariant
     ) {
         println("start for each classes===================")
         val generator = PatchGenerator(project, outputDir)
-        val classFiles = taskInputs.files.files
-        println("hotFixPatch.applicationName=${hotFixPatch.applicationName}")
-        val applicationName = hotFixPatch.applicationName.replace(
-            ".", Matcher.quoteReplacement(File.separator)
-        )
-        println("applicationName=$applicationName")
+        val classFiles = taskOutputs.files.files
         val md5Map = HashMap<String, String>(classFiles.size)
-        for (file in classFiles) {
-            fileForEach(file) { targetFile ->
-                handleClassAndJarFile(
-                    targetFile,
-                    applicationName,
-                    variant.dirName
-                ) { className, md5Hex, codeByteArray ->
-                    md5Map[className] = md5Hex
-                    generator.addClassToJarFile(className, md5Hex, codeByteArray)
-                }
-            }
+        forEachFiles(
+            hotFixPatch.applicationName,
+            variant.name,
+            classFiles
+        ) { className, md5Hex, codeByteArray ->
+            md5Map[className] = md5Hex
+            generator.addClassToJarFile(className, md5Hex, codeByteArray)
         }
         // DES: 在这里生成热修复包
         generator.generate(md5Map)
+    }
+
+    private fun forEachFiles(
+        applicationName: String,
+        driName: String,
+        files: Set<File>,
+        isInsertCode: Boolean = false,
+        callback: ((String, String, ByteArray) -> Unit)? = null
+    ) {
+        val appName = applicationName.replace(
+            "\\.".toRegex(), Matcher.quoteReplacement(File.separator)
+        )
+        for (file in files) {
+            println("file name=${file.name}")
+            fileForEach(file) { targetFile ->
+                handleClassAndJarFile(
+                    targetFile,
+                    appName,
+                    driName,
+                    isInsertCode,
+                    callback
+                )
+            }
+        }
     }
 
     // DES: 循环遍历文件
@@ -196,11 +232,12 @@ class PatchPlugin : Plugin<Project> {
     }
 
     // DES: 处理Class和jar文件
-    private inline fun handleClassAndJarFile(
+    private fun handleClassAndJarFile(
         file: File,
         applicationName: String,
         dirName: String,
-        callback: (String, String, ByteArray) -> Unit
+        isInsertCode: Boolean,
+        callback: ((String, String, ByteArray) -> Unit)?
     ) {
         val filePath = file.absolutePath
         when {
@@ -208,36 +245,41 @@ class PatchPlugin : Plugin<Project> {
 //                processJar(applicationName, file, callback)
             }
             filePath.endsWith(".class") -> {
-                processClass(applicationName, dirName, file, callback)
+                processClass(applicationName, dirName, file, isInsertCode, callback)
             }
         }
     }
 
     // DES: 处理class
-    private inline fun processClass(
+    private fun processClass(
         applicationName: String,
         dirName: String,
         file: File,
-        handleCallback: (String, String, ByteArray) -> Unit
+        isInsertCode: Boolean,
+        handleCallback: ((String, String, ByteArray) -> Unit)?
     ) {
         val className = file.absolutePath.split(dirName)[1].substring(1)
         if (!isClassHandle(applicationName, className)) {
             return
         }
-        println(className)
+        println("${if(isInsertCode) "insert" else "package"}=====$className")
         try {
             // DES: 执行插桩操作，解决类加载时检验失败的问题
             val codeByteArray = FileInputStream(file).use {
-                insertNewCode(it)
+                if (isInsertCode) insertNewCode(it) else it.readBytes()
             }
-            // DES: 修改后的代码覆盖之前的代码
-            FileOutputStream(file).use {
-                it.write(codeByteArray)
+            if (isInsertCode) {
+                // DES: 修改后的代码覆盖之前的代码
+                FileOutputStream(file).use {
+                    it.write(codeByteArray)
+                }
             }
-            // DES: 重新计算md5
-            val md5Hex = PatchUtils.toMd5Hex(codeByteArray)
-            // DES: 将结果回调
-            handleCallback(className, md5Hex, codeByteArray)
+            if (!isInsertCode) {
+                // DES: 重新计算md5
+                val md5Hex = PatchUtils.toMd5Hex(codeByteArray)
+                // DES: 将结果回调
+                handleCallback?.invoke(className, md5Hex, codeByteArray)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

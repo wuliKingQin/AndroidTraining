@@ -20,9 +20,5 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-#-keep class com.wuliqinwang.hotfix.** {
-#*;
-#}
-#-keep class com.wuliqinwang.android.** {
-# *;
-# }
+-keep class com.wuliqinwang.android.databinding.**{*;}
+-keep class com.wuliqinwang.android.common_lib.databinding.**{*;}

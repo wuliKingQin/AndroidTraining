@@ -10,6 +10,7 @@ import android.widget.ImageView
 import androidx.viewbinding.ViewBinding
 import com.wuliqinwang.act.register.ActivitiesFactory
 import com.wuliqinwang.android.common_lib.base.AbstractListActivity
+import com.wuliqinwang.android.common_lib.startActivityEx
 import com.wuliqinwang.android.databinding.RvMainActivityItemBinding
 
 // 用于测试使用的主界面

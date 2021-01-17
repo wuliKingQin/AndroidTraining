@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
-import com.wuliqinwang.android.tryCatch
+import com.wuliqinwang.android.common_lib.tryCatch
 import java.io.InputStream
 
 // 封装长图的加载视图

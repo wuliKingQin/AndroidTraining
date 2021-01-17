@@ -4,6 +4,7 @@ import android.os.Bundle
 import com.wuliqinwang.act.register.annotation.ActRegister
 import com.wuliqinwang.android.common_lib.base.BaseActivity
 import com.wuliqinwang.android.databinding.ActivityHotfixBinding
+import java.lang.NullPointerException
 
 /**
  * @Author: 秦王
