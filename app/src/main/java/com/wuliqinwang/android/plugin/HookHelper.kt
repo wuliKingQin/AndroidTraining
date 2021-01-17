@@ -4,10 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
-import android.os.Message
 import android.util.Log
-import com.wuliqinwang.android.getFieldValue
-import com.wuliqinwang.android.setFieldValue
+import com.wuliqinwang.android.common_lib.getFieldValue
+import com.wuliqinwang.android.common_lib.setFieldValue
 import java.lang.Exception
 import java.lang.reflect.Proxy
 
@@ -90,7 +89,7 @@ object HookHelper {
                 false
             }
             Log.d("test", "=============")
-            mHandleObj?.javaClass?.superclass?.setFieldValue("mCallback", callback, mHandleObj)
+            mHandleObj.setFieldValue("mCallback", callback)
         }catch (e: Exception) {
             e.printStackTrace()
         }

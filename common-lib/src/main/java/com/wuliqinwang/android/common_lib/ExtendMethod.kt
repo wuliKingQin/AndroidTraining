@@ -1,4 +1,4 @@
-package com.wuliqinwang.android
+package com.wuliqinwang.android.common_lib
 
 import android.app.Activity
 import android.content.Intent
@@ -92,12 +92,13 @@ fun String?.getMethod(methodName: String, vararg paramTypes: Class<*>): Method? 
 @Suppress("UNCHECKED_CAST")
 fun <T> Any?.invokeMethod(
     methodName: String,
-    params: Map<Class<*>, Any?>,
+    paramTypes: List<Class<*>>,
+    paramValues: List<Any?>,
     isStaticMethod: Boolean = false
 ): T? {
     this ?: return null
-    return this::class.java.getObjMethod(methodName, *params.keys.toTypedArray())
-        ?.invoke(if (isStaticMethod) null else this, *params.values.toTypedArray()) as? T
+    return this::class.java.getObjMethod(methodName, *paramTypes.toTypedArray())
+        ?.invoke(if (isStaticMethod) null else this, *paramValues.toTypedArray()) as? T
 }
 
 // DES: 获取构造器
@@ -109,12 +110,12 @@ fun String?.getConstructor(vararg paramTypes: Class<*>): Constructor<*>? {
 fun Class<*>?.getObjField(fieldName: String): Field? {
     this ?: return null
     var tempField: Field? = null
-    for (field in declaredFields) {
-        if (field.name == fieldName) {
-            tempField = field
+    try {
+        tempField = getDeclaredField(fieldName)
+        if (!tempField.isAccessible) {
             tempField.isAccessible = true
-            break
         }
+    } catch (e: Exception) {
     }
     return tempField ?: superclass.getObjField(fieldName)
 }
@@ -124,13 +125,45 @@ fun Class<*>?.getObjMethod(methodName: String, vararg paramTypes: Class<*>): Met
     this ?: return null
     var tempMethod: Method? = null
     for (method in declaredMethods) {
-        if (method.name == methodName && method.parameterTypes.contentDeepEquals(paramTypes)) {
-            tempMethod = method
-            tempMethod.isAccessible = true
-            break
+        if (method.name == methodName) {
+            method.parameterTypes.forEach {
+            }
         }
     }
+    try {
+        tempMethod = getDeclaredMethod(methodName, *paramTypes)
+        if (!tempMethod.isAccessible) {
+            tempMethod.isAccessible = true
+        }
+    } catch (e: Exception) {
+    }
     return tempMethod ?: superclass.getObjMethod(methodName, *paramTypes)
+}
+
+// 返回字符串的长度
+fun String?.ofSize(): Int {
+    return this?.length ?: 0
+}
+
+// 返回内容在字符串中的开始位置
+fun CharSequence?.ofIndex(content: String?): Int {
+    if (this.isNullOrEmpty() || content.isNullOrEmpty()) {
+        return -1
+    }
+    return indexOf(content)
+}
+
+// 经过扩展的apply
+fun <T, R> T?.applyEx(action: T.() -> R?): R?{
+    this ?: return null
+    return action(this)
+}
+
+// 将英文首字母大小
+fun String?.toCapitalLetter(default: String? = ""): String? {
+    this ?: return default
+    if (isEmpty() || !this[0].isLetter()) return default
+    return this[0].toUpperCase().plus(substring(1))
 }
 
 // DES: 用于处理异常信息
