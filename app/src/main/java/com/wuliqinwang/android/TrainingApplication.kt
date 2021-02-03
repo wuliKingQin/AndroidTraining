@@ -3,7 +3,6 @@ package com.wuliqinwang.android
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.wuliqinwang.hotfix.HotFixUtils
 import java.io.File
 
 // DES: 应用程序入口
@@ -16,8 +15,8 @@ class TrainingApplication: Application() {
         super.attachBaseContext(base)
         base ?: return
         // 热修复配置
-        val hotFixDir = base.getDir("patch", Context.MODE_PRIVATE)
-        val hotFixPatchFile = File(hotFixDir, "patch.dex")
-        HotFixUtils.installPatch(this, hotFixPatchFile)
+//        val hotFixDir = base.getDir("patch", Context.MODE_PRIVATE)
+//        val hotFixPatchFile = File(hotFixDir, "patch.dex")
+//        HotFixUtils.installPatch(this, hotFixPatchFile)
     }
 }

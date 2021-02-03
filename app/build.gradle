@@ -4,12 +4,12 @@ plugins {
     id 'kotlin-kapt'
 }
 
-apply plugin: com.wuliqinwang.patch.PatchPlugin
+//apply plugin: com.wuliqinwang.patch.PatchPlugin
 
-hotFixPatch {
-    debugOn true
-    applicationName 'com.wuliqinwang.android.TrainingApplication'
-}
+//hotFixPatch {
+//    debugOn true
+//    applicationName 'com.wuliqinwang.android.TrainingApplication'
+//}
 
 android {
     compileSdkVersion COMPILE_SDK
@@ -22,17 +22,19 @@ android {
         versionCode VERSION_CODE as int
         versionName VERSION_NAME
 
+        // 开始多dex的支持
+        multiDexEnabled false
         consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
         debug {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -53,18 +55,14 @@ android {
 dependencies {
     implementation rootProject.ext.dependencies['kotlin']
     implementation rootProject.ext.dependencies['core-ktx']
+    implementation rootProject.ext.dependencies['glide']
     implementation rootProject.ext.dependencies['androidx-appcompat']
     implementation rootProject.ext.dependencies['androidx-design']
     implementation rootProject.ext.dependencies['androidx-constraintlayout']
     implementation rootProject.ext.dependencies['support-v4']
+    implementation rootProject.ext.dependencies['multidex']
     implementation project(path: ':act-register-annotation')
-    implementation project(path: ':hotfix-patch')
+//    implementation project(path: ':hotfix-patch')
     implementation project(path: ':common-lib')
     kapt project(path: ':act-register-compiler')
-}
-
-kapt {
-    arguments {
-        arg("REGISTER_MODULE_NAME", project.getName())
-    }
 }
