@@ -116,7 +116,6 @@ fun Class<*>?.getObjField(fieldName: String): Field? {
             tempField.isAccessible = true
         }
     } catch (e: Exception) {
-        e.printStackTrace()
     }
     return tempField ?: superclass.getObjField(fieldName)
 }
@@ -125,27 +124,40 @@ fun Class<*>?.getObjField(fieldName: String): Field? {
 fun Class<*>?.getObjMethod(methodName: String, vararg paramTypes: Class<*>): Method? {
     this ?: return null
     var tempMethod: Method? = null
-    paramTypes.forEach {
-        Log.d("test===", "paramTypes class=${it}")
-    }
-    for (method in declaredMethods) {
-        if (method.name == methodName) {
-            Log.d("test===", "method name=${method.name}")
-            method.parameterTypes.forEach {
-                Log.d("test===", "parameterTypes class=${it}")
-            }
-        }
-    }
     try {
-         tempMethod = getDeclaredMethod(methodName, *paramTypes)
+        tempMethod = getDeclaredMethod(methodName, *paramTypes)
         if (!tempMethod.isAccessible) {
             tempMethod.isAccessible = true
         }
     } catch (e: Exception) {
-        e.printStackTrace()
     }
-    Log.d("test===", "methodName=${methodName} tempMethod=${tempMethod}")
     return tempMethod ?: superclass.getObjMethod(methodName, *paramTypes)
+}
+
+// 返回字符串的长度
+fun String?.ofSize(): Int {
+    return this?.length ?: 0
+}
+
+// 返回内容在字符串中的开始位置
+fun CharSequence?.ofIndex(content: String?): Int {
+    if (this.isNullOrEmpty() || content.isNullOrEmpty()) {
+        return -1
+    }
+    return indexOf(content)
+}
+
+// 经过扩展的apply
+fun <T, R> T?.applyEx(action: T.() -> R?): R?{
+    this ?: return null
+    return action(this)
+}
+
+// 将英文首字母大小
+fun String?.toCapitalLetter(default: String? = ""): String? {
+    this ?: return default
+    if (isEmpty() || !this[0].isLetter()) return default
+    return this[0].toUpperCase().plus(substring(1))
 }
 
 // DES: 用于处理异常信息
