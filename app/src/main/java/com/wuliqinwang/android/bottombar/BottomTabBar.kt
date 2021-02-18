@@ -12,6 +12,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.get
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
+import com.wuliqinwang.android.bottombar.tab.AbstractTabView
+import com.wuliqinwang.android.bottombar.tab.IconLoader
 import java.lang.RuntimeException
 
 /**
@@ -53,6 +55,10 @@ class BottomTabBar @JvmOverloads constructor(
         return null
     }
 
+    fun setIconLoader() {
+
+    }
+
     fun setDefaultTabBar(creator: IBottomBarCreator) {
         val tabItemsSize = creator.getTabItemCount() - 1
         if (tabItemsSize <= 0) {
@@ -63,6 +69,7 @@ class BottomTabBar @JvmOverloads constructor(
         var nextViewId = View.generateViewId()
         for(index in 0 until (tabItemsSize + 1)) {
             val tabItemView = creator.createTabItem(context, index)
+            tabItemView.tag = index
             tabItemView.id = nextViewId
             nextViewId = View.generateViewId()
             val params = LayoutParams(0, LayoutParams.MATCH_PARENT).apply {
@@ -95,7 +102,9 @@ class BottomTabBar @JvmOverloads constructor(
     }
 
     // DES: 默认TabItem实现类
-    class DefaultTabItemView: AbstractTabView() {
+    class DefaultTabItemView(
+        iconLoader: IconLoader? = null
+    ): AbstractTabView(iconLoader) {
 
         // tab的图标
         private lateinit var mTabIconIv: ImageView
@@ -109,7 +118,7 @@ class BottomTabBar @JvmOverloads constructor(
         override fun createTabView(context: Context) {
             mTabIconIv = ImageView(context).apply {
                 id = View.generateViewId()
-                setIconStatus(this, isSelectedStatus())
+                setIconStatus(this, this@DefaultTabItemView.isSelected())
             }
             mTabNameTv = TextView(context).apply {
                 id = View.generateViewId()
@@ -117,7 +126,7 @@ class BottomTabBar @JvmOverloads constructor(
                 textSize = model.fontSize
                 gravity = Gravity.CENTER
                 ellipsize = TextUtils.TruncateAt.END
-                setNameStatus(this, isSelectedStatus())
+                setNameStatus(this, this@DefaultTabItemView.isSelected())
             }
             mGiveSpace = Space(context).apply {
                 id = View.generateViewId()
@@ -165,7 +174,7 @@ class BottomTabBar @JvmOverloads constructor(
             }
         }
 
-        override fun setSelectedStatus(selected: Boolean) {
+        override fun setSelected(selected: Boolean) {
             setIconStatus(mTabIconIv, selected)
             if (!model.isGive) {
                 setNameStatus(mTabNameTv, selected)

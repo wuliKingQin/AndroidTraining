@@ -4,11 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.wuliqinwang.android.bottombar.tab.TabView
 
 @SuppressLint("ViewConstructor")
 class TabItemView private constructor(
     context: Context,
-    private var tabView: ITabView,
+    private var tabView: TabView,
     private var model: TabItemModel
 ): ConstraintLayout(context){
 
@@ -29,13 +30,14 @@ class TabItemView private constructor(
 
     override fun setSelected(selected: Boolean) {
         super.setSelected(selected)
-        tabView.setSelectedStatus(isSelected)
+        tabView.setSelected(isSelected)
     }
 
     // TabItemBuilder
     class TabItemBuilder(
         private var model: TabItemModel = TabItemModel()
     ) {
+
         // DES: 设置选中和未选中的图标, 支持资源Id, Bitmap, Drawable, 以及连接地址
         fun setIcon(selectedIcon: Any?, unselectedIcon: Any?): TabItemBuilder {
             model.selectedIcon = selectedIcon
@@ -95,7 +97,7 @@ class TabItemView private constructor(
         }
 
         // DES: 开始构建
-        fun build(context: Context, tabView: ITabView? = null): TabItemView {
+        fun build(context: Context, tabView: TabView? = null): TabItemView {
             return TabItemView(context, tabView ?: BottomTabBar.DefaultTabItemView(), model)
         }
     }
