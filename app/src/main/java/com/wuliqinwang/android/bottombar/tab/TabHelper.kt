@@ -43,9 +43,11 @@ object TabHelper {
         selected: Boolean,
         selectedIcon: Any?,
         unselectedIcon: Any?,
-        loader: IconLoader? = null
+        loader: IconLoader? = null,
+        position: Int = -1
     ) {
         setIcon(
+            position,
             targetView,
             if (selected) selectedIcon else unselectedIcon,
             loader
@@ -53,15 +55,15 @@ object TabHelper {
     }
 
     // DES: 设置图标
-    private fun setIcon(targetView: ImageView, icon: Any?, loader: IconLoader?) {
+    private fun setIcon(position: Int, targetView: ImageView, icon: Any?, loader: IconLoader?) {
         if (loader != null) {
-            loader.onLoading(targetView, icon)
+            loader.onLoading(position, targetView, icon)
         } else {
             loadIconWithGlide(targetView, icon)
         }
     }
 
-    // DES: 导入网络图，改地方可以被重写
+    // DES: 导入网络图，该地方可以被重写
     private fun loadIconWithGlide(targetView: ImageView, iconModel: Any?) {
         Glide.with(targetView)
             .load(iconModel)

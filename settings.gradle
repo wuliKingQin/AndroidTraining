@@ -1,6 +1,5 @@
 include ':hotfix-patch'
 include ':buildSrc'
-include ':buildSrc'
 include ':act-register-annotation'
 include ':act-register-compiler'
 include ':app'

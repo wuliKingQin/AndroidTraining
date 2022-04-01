@@ -7,6 +7,8 @@ class TestRunnable: Runnable {
 
 class Thread1: Thread(){
 
+    var ss = "000000000000000000"
+
     override fun run() {
         while (!isInterrupted) {
             println("===============")

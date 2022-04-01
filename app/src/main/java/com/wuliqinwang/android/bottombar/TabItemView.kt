@@ -2,18 +2,25 @@ package com.wuliqinwang.android.bottombar
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.view.MotionEvent
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.wuliqinwang.android.bottombar.tab.IconLoader
 import com.wuliqinwang.android.bottombar.tab.TabView
 
 @SuppressLint("ViewConstructor")
 class TabItemView private constructor(
     context: Context,
     private var tabView: TabView,
-    private var model: TabItemModel
+    model: TabItemModel
 ): ConstraintLayout(context){
 
+    // DES: TabItem的数据模型
+    val dataModel = model
+
     companion object {
+        // DES: 无效位置
+        const val INVALID_POSITION = -1
         // DES: 构建一个TabItemBuilder实例
         fun builder(tabItemModel: TabItemModel? = null): TabItemBuilder {
             return if (tabItemModel != null) {
@@ -28,15 +35,50 @@ class TabItemView private constructor(
         tabView.initializer(model, this)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        return if (!tabView.onTouchEvent(event)) {
+            super.onTouchEvent(event)
+        } else {
+            true
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        return if (!tabView.dispatchTouchEvent(ev)) {
+            super.dispatchTouchEvent(ev)
+        } else {
+            true
+        }
+    }
+
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        return if (!tabView.onInterceptTouchEvent(ev)) {
+            super.onInterceptTouchEvent(ev)
+        } else {
+            true
+        }
+    }
+
     override fun setSelected(selected: Boolean) {
         super.setSelected(selected)
-        tabView.setSelected(isSelected)
+        tabView.setSelected((tag as? Int) ?: INVALID_POSITION, selected)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T: TabView> getTabView(): T? {
+        return tabView as? T
     }
 
     // TabItemBuilder
     class TabItemBuilder(
         private var model: TabItemModel = TabItemModel()
     ) {
+
+        // DES: 保存tabView
+        private var mTabView: TabView? = null
+        // DES: 图标加载器
+        private var mIconLoader: IconLoader? = null
 
         // DES: 设置选中和未选中的图标, 支持资源Id, Bitmap, Drawable, 以及连接地址
         fun setIcon(selectedIcon: Any?, unselectedIcon: Any?): TabItemBuilder {
@@ -96,9 +138,31 @@ class TabItemView private constructor(
             return this
         }
 
+        // DES: 设置自己实现的TabItemView业务部分
+        fun setTabView(tabView: TabView): TabItemBuilder {
+            mTabView = tabView
+            return this
+        }
+        
+        // DES: 图标加载器
+        fun setIconLoader(iconLoader: IconLoader): TabItemBuilder {
+            mIconLoader = iconLoader
+            return this
+        }
+
+        // DES: 设置你的其他数据信息
+        fun setYourData(yourData: Any?): TabItemBuilder {
+            model.yourData = yourData
+            return this
+        }
+
         // DES: 开始构建
-        fun build(context: Context, tabView: TabView? = null): TabItemView {
-            return TabItemView(context, tabView ?: BottomTabBar.DefaultTabItemView(), model)
+        fun build(context: Context, index: Int = INVALID_POSITION): TabItemView {
+            val tabView = (mTabView ?: BottomTabBar.DefaultTabView()).apply {
+                iconLoader = mIconLoader
+                position = index
+            }
+            return TabItemView(context, tabView, model)
         }
     }
 
@@ -125,6 +189,8 @@ class TabItemView private constructor(
         // DES: 用于判断是否需要透出，否认是不需要
         var isGive: Boolean = false,
         // DES: 图标距离底部的透出大小，默认是0f,
-        var giveSize: Float = 0f
+        var giveSize: Float = 0f,
+        // DES: 你的数据其他数据
+        var yourData: Any? = null
     )
 }

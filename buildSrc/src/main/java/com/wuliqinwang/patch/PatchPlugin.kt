@@ -4,8 +4,6 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.internal.tasks.R8Task
-import com.android.dex.Dex
-import com.android.dx.dex.file.DexFile
 import com.android.utils.FileUtils
 import org.apache.commons.compress.utils.IOUtils
 import org.gradle.api.Plugin
@@ -18,10 +16,12 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.util.*
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.regex.Matcher
+import kotlin.collections.HashMap
 
 /**
  * @Version: 1.0.0
@@ -40,11 +40,11 @@ class PatchPlugin : Plugin<Project> {
         // DES: 在build.gradle文件中创建一个热修复配置字段
         target.extensions.create(HotFixExtension.HOT_FIX_PATCH, HotFixExtension::class.java)
         // DES: 在build.gradle解析完成后执行我们自己的
+        // DES: 获取app的配置信息
+        val appExtension = target.extensions.findByType(AppExtension::class.java)
         target.afterEvaluate { project ->
             // DES: 获取热修复的配置信息
             val hotFixPatch = project.extensions.getByType(HotFixExtension::class.java)
-            // DES: 获取app的配置信息
-            val appExtension = project.extensions.findByType(AppExtension::class.java)
             // DES: 变量应用程序的变体，比如debug或者release环境等
             appExtension?.applicationVariants?.all { variant ->
                 // DES: 如果实在debug环境，并且热修复在debug的开发是关闭的，则不进行热修复包的生成
@@ -55,6 +55,7 @@ class PatchPlugin : Plugin<Project> {
                 generatePatchDexFile(project, hotFixPatch, variant)
             }
         }
+        appExtension?.registerTransform(HotFixTransform(), Collections.EMPTY_LIST)
     }
 
     private fun generatePatchDexFile(

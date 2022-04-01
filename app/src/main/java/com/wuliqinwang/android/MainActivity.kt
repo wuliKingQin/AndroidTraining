@@ -69,3 +69,4 @@ class MainActivity : AbstractListActivity<MainActivity.ActivityBo>() {
         setListData(activityList)
     }
 }
+

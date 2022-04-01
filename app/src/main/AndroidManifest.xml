@@ -12,19 +12,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidTraining">
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <!--用于插件使用傀儡界面-->
         <activity android:name=".plugin.DummyPluginActivity" />
         <activity android:name=".plugin.PluginTestActivity" />
         <activity android:name=".bitmap.BitmapOptimizationActivity" />
         <activity android:name=".hotfix.HotFixActivity" />
         <activity android:name=".bottombar.BottomBarActivity" />
+        <activity android:name=".recyclerview.TestRecyclerViewActivity" />
+        <activity android:name=".gson.GSONAndSPTestActivity" />
+        <activity android:name=".handlertest.HandlerTestActivity" />
+        <activity android:name=".refresh.RefreshTestActivity" />
+        <activity android:name=".SplashActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".mvvm.MvvmTestActivity" />
+        <activity android:name=".anr.AnrActivity" />
+        <activity android:name=".progress.ProgressTestActivity" />
     </application>
 
 </manifest>

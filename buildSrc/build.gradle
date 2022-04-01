@@ -29,4 +29,6 @@ repositories {
 
 dependencies {
     implementation("com.android.tools.build:gradle:3.6.4")
+    implementation "org.ow2.asm:asm:7.1"
+    implementation "org.ow2.asm:asm-commons:7.1"
 }

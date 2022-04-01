@@ -11,6 +11,7 @@ import javax.lang.model.element.Element
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import kotlin.Comparator
+import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 
 /**
@@ -20,13 +21,7 @@ import kotlin.collections.LinkedHashMap
 open class RegisterProcessor: BaseProcessor(){
 
     private val mRegisterActivitiesMap by lazy {
-        TreeSet<ActRegisterBo>(Comparator<ActRegisterBo> { p0, p1 ->
-            try {
-                p0.actRegister.position.compareTo(p1.actRegister.position)
-            } catch (e: java.lang.Exception) {
-                0
-            }
-        })
+        ArrayList<ActRegisterBo>()
     }
 
     override fun getModuleNameKey(): String = "REGISTER_MODULE_NAME"
@@ -77,6 +72,7 @@ open class RegisterProcessor: BaseProcessor(){
         }
         val statement = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
+        mRegisterActivitiesMap.sort()
         mRegisterActivitiesMap.forEach {
             val key = if (it.actRegister.name.isEmpty()) it.targetElement.toString() else it.actRegister.name
             val targetElement = ClassName.get(it.targetElement as TypeElement)
@@ -103,5 +99,13 @@ open class RegisterProcessor: BaseProcessor(){
     data class ActRegisterBo(
         val actRegister: ActRegister,
         val targetElement: Element
-    )
+    ): Comparable<ActRegisterBo>{
+        override fun compareTo(other: ActRegisterBo): Int {
+            return if (actRegister.position == other.actRegister.position) {
+                actRegister.name.compareTo(other.actRegister.name)
+            } else {
+                actRegister.position - other.actRegister.position
+            }
+        }
+    }
 }

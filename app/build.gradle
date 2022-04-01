@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'kotlin-android-extensions'
+    id 'com.tencent.matrix-plugin'
 }
 
 //apply plugin: com.wuliqinwang.patch.PatchPlugin
@@ -50,6 +52,10 @@ android {
     viewBinding {
         enabled = true
     }
+
+    dataBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -61,8 +67,29 @@ dependencies {
     implementation rootProject.ext.dependencies['androidx-constraintlayout']
     implementation rootProject.ext.dependencies['support-v4']
     implementation rootProject.ext.dependencies['multidex']
+    implementation rootProject.ext.dependencies['gson']
+    implementation rootProject.ext.dependencies["leakcanary-android"]
+    implementation rootProject.ext.dependencies["SmartRefreshLayout"]
+    implementation rootProject.ext.dependencies["okhttp3"]
+    implementation rootProject.ext.dependencies["ulog"]
+    implementation rootProject.ext.dependencies["coroutines-core"]
+    implementation rootProject.ext.dependencies["coroutines-android"]
+    implementation rootProject.ext.dependencies["lens"]
+    implementation rootProject.ext.dependencies["lifecycle-extensions"]
+    annotationProcessor rootProject.ext.dependencies["lifecycle-compiler"]
+    implementation group: "com.tencent.matrix", name: "matrix-android-lib", version: MATRIX_VERSION, changing: true
+    implementation group: "com.tencent.matrix", name: "matrix-android-commons", version: MATRIX_VERSION, changing: true
+    implementation group: "com.tencent.matrix", name: "matrix-trace-canary", version: MATRIX_VERSION, changing: true
     implementation project(path: ':act-register-annotation')
 //    implementation project(path: ':hotfix-patch')
     implementation project(path: ':common-lib')
     kapt project(path: ':act-register-compiler')
+}
+
+matrix {
+    trace {
+        enable = true	//if you don't want to use trace canary, set false
+        baseMethodMapFile = "${project.buildDir}/matrix_output/Debug.methodmap"
+        blackListFile = "${project.projectDir}/matrixTrace/blackMethodList.txt"
+    }
 }

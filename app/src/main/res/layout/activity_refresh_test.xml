@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.scwang.smartrefresh.layout.SmartRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="150dp">
+    <com.wuliqinwang.android.refresh.RefreshHeadView
+        android:id="@+id/refreshHeadView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/refreshContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+        android:background="@android:color/holo_red_dark"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</com.scwang.smartrefresh.layout.SmartRefreshLayout>
