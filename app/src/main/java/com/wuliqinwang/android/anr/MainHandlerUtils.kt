@@ -1,8 +1,10 @@
 package com.wuliqinwang.android.anr
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.view.Choreographer
+import com.wuliqinwang.android.common_lib.getFieldValue
 import java.lang.Exception
-import java.lang.reflect.Field
 
 /**
  * des: 用于反射获取ActivityThread类里面的mH的相关信息
@@ -22,9 +24,19 @@ object MainHandlerUtils {
     }
 
     @Synchronized
-    fun getMainHandlerField(): Field? {
+    fun getMainHandler(): Handler? {
         return try {
+            val activityThreadObj = "android.app.ActivityThread".getFieldValue("sCurrentActivityThread")
+            activityThreadObj.getValueOfField("mH")
+        } catch (e: Exception) {
             null
+        }
+    }
+
+    @Synchronized
+    fun getChoreographerHandler(): Handler? {
+        return try {
+            Choreographer.getInstance().getValueOfField("mHandler")
         } catch (e: Exception) {
             null
         }

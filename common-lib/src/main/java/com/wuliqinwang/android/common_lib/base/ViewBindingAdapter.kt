@@ -25,7 +25,6 @@ abstract class CommonAdapter<T>(dataSet: ArrayList<T>? = null):
         if (viewHolder == null) {
             viewHolder = CommonViewHolder(viewBinding)
         }
-        println("new holder=$viewHolder")
         return viewHolder
     }
 
@@ -188,7 +187,6 @@ abstract class CommonAdapter<T>(dataSet: ArrayList<T>? = null):
     override fun getItemCount(): Int = mData?.size ?: 0
 
     override fun onBindViewHolder(holder: CommonViewHolder, position: Int) {
-        println("holder=${holder}")
         val currentData = mData?.get(position)
         if(currentData != null) {
             val viewType = getItemViewType(position)

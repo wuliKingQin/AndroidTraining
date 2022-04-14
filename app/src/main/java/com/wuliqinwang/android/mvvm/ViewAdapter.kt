@@ -8,6 +8,7 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
+import com.wuliqinwang.android.progress.BubbleProgressView
 
 object ViewAdapter {
 
@@ -53,5 +54,17 @@ object ViewAdapter {
         Glide.with(targetView)
             .load(imageRes)
             .into(targetView)
+    }
+
+    @JvmStatic
+    @BindingAdapter("bubbleProgress")
+    fun setBubbleProgress(targetView: BubbleProgressView, progress: Int) {
+        targetView.setProgress(progress, 20)
+    }
+
+    @JvmStatic
+    @BindingAdapter("bubbleText")
+    fun setBubbleText(targetView: BubbleProgressView, text: String?) {
+        targetView.bubbleText = text ?: ""
     }
 }

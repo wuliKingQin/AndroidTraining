@@ -1,8 +1,12 @@
 package com.wuliqinwang.android.common_lib
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.text.Html
 import android.util.Log
+import androidx.viewbinding.ViewBinding
 import java.lang.Exception
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -175,4 +179,33 @@ inline fun <T> tryCatch(action: (isError: Boolean, errorInfo: Exception?) -> T?)
 fun Activity?.startActivityEx(targetClass: Class<*>, action: Intent.() -> Unit = {}) {
     this ?: return
     startActivity(Intent(this, targetClass).apply(action))
+}
+
+// doc: 富文本使用Html显示字符串
+fun String?.toHtml(): CharSequence {
+    this ?: return ""
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Html.fromHtml(this, Html.FROM_HTML_MODE_LEGACY)
+        } else {
+            Html.fromHtml(this)
+        }
+    } catch (e: Exception) {
+        this
+    }
+}
+
+@JvmOverloads
+fun <T: Activity> Context?.launch(targetActivityClass: Class<T>, dataAction: (Intent.() -> Unit)? = null) {
+    this ?: return
+    startActivity(Intent(this, targetActivityClass).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        dataAction?.invoke(this)
+    })
+}
+
+// 启动页面
+fun <A: Activity, T: ViewBinding> T?.launch(targetActivityClass: Class<A>, dataAction: (Intent.() -> Unit)? = null) {
+    this ?: return
+    root.context.launch(targetActivityClass, dataAction)
 }

@@ -1,6 +1,9 @@
 package com.wuliqinwang.android.mvvm
 
 import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
+import androidx.databinding.ObservableField
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.wuliqinwang.android.R
@@ -8,8 +11,24 @@ import com.wuliqinwang.android.R
 class MvvmViewModel: ViewModel(){
     var userInfo = MutableLiveData<DataModel>()
 
+    var progress = ObservableField(0)
+    var bubbleText = ObservableField("")
+    private val uHandler by lazy {
+        Handler(Looper.getMainLooper())
+    }
+
     init {
         userInfo.value = DataModel("999999999")
+        uHandler.postDelayed(object :Runnable {
+            override fun run() {
+                val currProgress = progress.get() ?: 0
+                if (currProgress < 20) {
+                    bubbleText.set("${currProgress + 1}人已领取, 还有${20 - currProgress - 1}人未领取")
+                    progress.set(currProgress + 1)
+                    uHandler.postDelayed(this, 1000)
+                }
+            }
+        }, 1000)
     }
 
     fun random() {

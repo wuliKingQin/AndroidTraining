@@ -83,7 +83,8 @@ allprojects {
                 "coroutines-android"       : "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2",
                 "lens"                     : "com.iqiyi.lens:lens:1.2.4",
                 "lifecycle-extensions"     : "androidx.lifecycle:lifecycle-extensions:2.2.0",
-                "lifecycle-compiler"       : "androidx.lifecycle:lifecycle-compiler:2.2.0"
+                "lifecycle-compiler"       : "androidx.lifecycle:lifecycle-compiler:2.2.0",
+                "kotlin-reflect"           : "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
         ]
     }
 }

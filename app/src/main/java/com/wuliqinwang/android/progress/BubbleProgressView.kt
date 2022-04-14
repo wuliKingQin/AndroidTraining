@@ -3,6 +3,7 @@ package com.wuliqinwang.android.progress
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
+import android.text.SpannableString
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -129,7 +130,7 @@ class BubbleProgressView @JvmOverloads constructor(
     private var mProgressColor = Color.parseColor("#FF4335")
 
     // doc: 气泡文本
-    var bubbleText: String? = ""
+    var bubbleText: CharSequence? = ""
         set(value) {
             field = value
             bubble.text = value
@@ -321,7 +322,7 @@ class BubbleProgressView @JvmOverloads constructor(
      */
     class Bubble(
         private var progress: Progress,
-        var text: String? = null
+        var text: CharSequence? = null
     ) : Draw {
         var horizontalMargin = 0
         var virtualMargin = progress.getAdapterSize(8).toInt()
@@ -398,17 +399,25 @@ class BubbleProgressView @JvmOverloads constructor(
                 )
                 close()
             }
-            val textLeft =
-                mPoint[0] - mTriangleWidth - mRoundRadius - progress.getProgressRate() * mWidth
+            val textLeft = if (progress.getProgressRate() == 0f) {
+                // 进度为0的时候，需要剪掉下面三角宽度，不然会导致三角绘制到了气泡半圆外
+                mPoint[0] - mTriangleWidth - mRoundRadius
+            } else {
+                // 进度不为0时, 可以省掉三角宽度
+                mPoint[0] - mRoundRadius - progress.getProgressRate() * mWidth
+            }
             val textTop = mPoint[1] - mTriangleHeight - progress.getProgressHeight() - mHeight
-            val textRight =
-                mPoint[0] + mTriangleWidth + mRoundRadius + (1 - progress.getProgressRate()) * mWidth
+            val textRight = if (progress.getProgressRate() == 1f) {
+                mPoint[0] + mRoundRadius + mTriangleWidth
+            } else {
+                mPoint[0] + mRoundRadius + (1 - progress.getProgressRate()) * mWidth + horizontalMargin
+            }
             mTextRectF.set(textLeft, textTop, textRight, textTop + mHeight)
             mPath.addRoundRect(mTextRectF, mHeight.toFloat(), mHeight.toFloat(), Path.Direction.CW)
             canvas?.drawPath(mPath, mPaint)
             val textOffset = (mFontMetrics.bottom - mFontMetrics.ascent) / 2 - mFontMetrics.bottom
             canvas?.drawText(
-                content,
+                content.toString(),
                 mTextRectF.centerX(),
                 mTextRectF.centerY() + textOffset,
                 mTextPaint
@@ -419,8 +428,8 @@ class BubbleProgressView @JvmOverloads constructor(
          * des: 用于文本自适应气泡，使其不超过进度最大宽度
          * time: 2022/4/1 14:06
          */
-        private fun textWrap(content: String, progressMaxLength: Float): String {
-            mTextPaint.getTextBounds(content, 0, content.length, mDisplayRect)
+        private fun textWrap(content: CharSequence, progressMaxLength: Float): CharSequence {
+            mTextPaint.getTextBounds(content.toString(), 0, content.length, mDisplayRect)
             return if ((mDisplayRect.width() + horizontalMargin) > progressMaxLength) {
                 val wrapSize = (progressMaxLength - mSingleTextWidth.shl(2)) / mSingleTextWidth
                 val text = content.substring(0, wrapSize.toInt()).plus("...")
