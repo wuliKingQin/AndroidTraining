@@ -11,6 +11,8 @@ import androidx.databinding.BindingAdapter
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.utopia.android.ulog.ULog
+import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
+import com.wuliqinwang.android.anr.monitor.cache.Record
 import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
 import com.wuliqinwang.android.common_lib.launch
 import com.wuliqinwang.android.mvvm.MvvmTestActivity
@@ -46,14 +48,19 @@ class AnrViewModel : ViewModel() {
     // 开始反射点击处理
     fun startReflectClick() {
         MessageMonitor(Looper.getMainLooper()).startMonitor()
-        val frameHandler = MainHandlerUtils.getChoreographerHandler()
-        frameHandler.setValueOfField("mCallback", object : Handler.Callback {
-            override fun handleMessage(msg: Message): Boolean {
-                printMessage("Frame Handler message what: ${msg.what} message when: ${msg.`when`}")
-                return false
-            }
-        })
-        printMessage(frameHandler.toString(), 50)
+//        val frameHandler = MainHandlerUtils.getChoreographerHandler()
+//        frameHandler.setValueOfField("mCallback", object : Handler.Callback {
+//            override fun handleMessage(msg: Message): Boolean {
+//                printMessage("Frame Handler message what: ${msg.what} message when: ${msg.`when`}")
+//                return false
+//            }
+//        })
+//        printMessage(frameHandler.toString(), 50)
+        for (index in 0..1000) {
+            LruRecorder.putRecord(Record(index, wall = index * 1000L))
+        }
+        LruRecorder.clearAll()
+        printMessage("record size: ${LruRecorder.getRecordSize()} id: ${LruRecorder.getRecord(999)?.wall}")
     }
 
     private fun printMessage(msg: String?, delayed: Long = 0) {
