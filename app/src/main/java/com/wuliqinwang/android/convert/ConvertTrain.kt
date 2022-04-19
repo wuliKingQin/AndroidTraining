@@ -1,6 +1,7 @@
 package com.wuliqinwang.android.convert
 
-import com.swallowsonny.convertextlibrary.readFloatLE
+import readFloatLE
+
 
 fun main() {
     val float = 2.5f

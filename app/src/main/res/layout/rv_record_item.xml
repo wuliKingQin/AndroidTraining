@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <variable
+            name="anrVm"
+            type="com.wuliqinwang.android.anr.AnrViewModel" />
+        <variable
+            name="record"
+            type="com.wuliqinwang.android.anr.monitor.cache.Record" />
+    </data>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:onClick="@{()-> anrVm.rvItemClick(record)}">
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/recordTypeTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{0}"
+            app:recordInfo="@{record}"
+            tools:text="type: 普通消息"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/wallTv"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/wallTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{1}"
+            app:recordInfo="@{record}"
+            tools:text="wall: 100s"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@+id/recordTypeTv"
+            app:layout_constraintLeft_toLeftOf="@+id/recordTypeTv"
+            app:layout_constraintBottom_toTopOf="@+id/countTv"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/countTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{2}"
+            app:recordInfo="@{record}"
+            tools:text="count: 11"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@+id/wallTv"
+            app:layout_constraintLeft_toLeftOf="@+id/recordTypeTv"
+            app:layout_constraintBottom_toTopOf="@+id/whatTv"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/whatTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{3}"
+            app:recordInfo="@{record}"
+            tools:text="what: 11"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@+id/countTv"
+            app:layout_constraintLeft_toLeftOf="@+id/recordTypeTv"
+            app:layout_constraintBottom_toTopOf="@+id/handleTv"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/handleTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{4}"
+            app:recordInfo="@{record}"
+            tools:text="handle: 11000000000000000000000000000000"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@+id/whatTv"
+            app:layout_constraintLeft_toLeftOf="@+id/recordTypeTv"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

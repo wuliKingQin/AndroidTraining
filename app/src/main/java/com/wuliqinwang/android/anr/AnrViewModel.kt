@@ -15,6 +15,7 @@ import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
 import com.wuliqinwang.android.anr.monitor.cache.Record
 import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
 import com.wuliqinwang.android.common_lib.launch
+import com.wuliqinwang.android.mvvm.DataModel
 import com.wuliqinwang.android.mvvm.MvvmTestActivity
 import java.io.Serializable
 import java.util.*
@@ -30,24 +31,21 @@ class AnrViewModel : ViewModel() {
         ObservableField("")
     }
 
+    val recordAdapter by lazy {
+        RecordDataAdapter(this)
+    }
+
     private val mUiHandler by lazy {
         Handler(Looper.getMainLooper())
     }
 
-    companion object {
-        @JvmStatic
-        @BindingAdapter("appendText")
-        fun appendText(targetView: TextView, text: String?) {
-            if (text.isNullOrEmpty()) {
-                return
-            }
-            targetView.append(text)
-        }
+    private val mMonitor by lazy {
+        MessageMonitor(Looper.getMainLooper())
     }
 
     // 开始反射点击处理
     fun startReflectClick() {
-        MessageMonitor(Looper.getMainLooper()).startMonitor()
+        mMonitor.startMonitor()
 //        val frameHandler = MainHandlerUtils.getChoreographerHandler()
 //        frameHandler.setValueOfField("mCallback", object : Handler.Callback {
 //            override fun handleMessage(msg: Message): Boolean {
@@ -56,11 +54,11 @@ class AnrViewModel : ViewModel() {
 //            }
 //        })
 //        printMessage(frameHandler.toString(), 50)
-        for (index in 0..1000) {
-            LruRecorder.putRecord(Record(index, wall = index * 1000L))
-        }
-        LruRecorder.clearAll()
-        printMessage("record size: ${LruRecorder.getRecordSize()} id: ${LruRecorder.getRecord(999)?.wall}")
+//        for (index in 0..1000) {
+//            LruRecorder.putRecord(Record(index, wall = index * 1000L))
+//        }
+//        LruRecorder.clearAll()
+//        printMessage("record size: ${LruRecorder.getRecordSize()} id: ${LruRecorder.getRecord(999)?.wall}")
     }
 
     private fun printMessage(msg: String?, delayed: Long = 0) {
@@ -75,26 +73,9 @@ class AnrViewModel : ViewModel() {
     }
 
     fun startActivityClick(view: View) {
-        view.context.launch(MvvmTestActivity::class.java)
-        val field = TestField()
-        val runnable = field.getValueOfField<Runnable>("mRunnable")
-        printMessage("mVersion=${runnable}")
-        runnable?.run()
-        printMessage("mVersion=${TestField::class.java.getValueOfStaticField<Int>("mVersion")}")
-        val method = TestMethod()
-        // 测试普通类的方法
-        method.runMethod<Unit>("print")
-        // 测试普通类的方法,带参数
-        method.runMethod<Unit>("print", hashMapOf(String::class.java to "我是测试消息"))
-        // 测试伴生类非Java静态方法的反射
-        TestMethod::class.companionObjectInstance.runMethod<Unit>("test")
-        // 测试伴生类属于Java静态方法的发射
-        TestMethod::class.java.runStaticMethod<Unit>("executeTask")
-        // 测试伴生类属于Java静态方法的发射，带参数的方法
-        TestMethod::class.java.runStaticMethod<Unit>(
-            "executeTask",
-            hashMapOf(String::class.java to "我是执行测试方法")
-        )
+        if (LruRecorder.getRecordSize() > 0) {
+            recordAdapter.dataList.setDataWithNotify(LruRecorder.getAllRecords())
+        }
     }
 
     fun timeConsumingClick() {
@@ -102,6 +83,10 @@ class AnrViewModel : ViewModel() {
         for (time in list) {
             mUiHandler.post(ConsumingRunnable(time))
         }
+    }
+
+    fun rvItemClick(record: Record) {
+        reflectContent.set(record.stackInfo)
     }
 
     class ConsumingRunnable(

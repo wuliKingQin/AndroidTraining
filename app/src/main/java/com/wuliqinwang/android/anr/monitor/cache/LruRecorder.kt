@@ -2,14 +2,12 @@ package com.wuliqinwang.android.anr.monitor.cache
 
 import android.util.SparseArray
 import androidx.core.util.*
-import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 // 实现LRU缓存记录器
 class LruRecorder private constructor(
     private val capacity: Int = MAX_RECORD_COUNT
-) : MutableMap<Int, Record?> {
+){
 
     companion object {
 
@@ -18,40 +16,57 @@ class LruRecorder private constructor(
 
         // 保存一份全局单列
         private val mLruRecorder by lazy {
-            Collections.synchronizedMap(LruRecorder())
+            LruRecorder()
         }
 
         // 获取记录
         @JvmStatic
         fun getRecord(key: Int): Record? {
-            return mLruRecorder[key]
+            synchronized(mLruRecorder) {
+                return mLruRecorder.get(key)
+            }
         }
 
         // 添加记录
         @JvmStatic
-        fun putRecord(record: Record) {
-            mLruRecorder[record.id] = record
+        fun putRecord(record: Record): Record {
+            synchronized(mLruRecorder) {
+                mLruRecorder.put(record.id, record)
+            }
+            return record
         }
 
         // 获取记录器里面的所有的值
         @JvmStatic
-        fun getAllRecords(): MutableCollection<Record?> {
-            return mLruRecorder.values
+        fun getAllRecords(): List<Record> {
+            val tempList = ArrayList<Record>(getRecordSize())
+            synchronized(mLruRecorder) {
+                for (value in mLruRecorder.values) {
+                    value.value?.apply {
+                        tempList.add(this)
+                    }
+                }
+            }
+            return tempList
         }
 
         // 清除所有的记录信息
         @JvmStatic
         fun clearAll() {
-            mLruRecorder.clear()
+            synchronized(mLruRecorder) {
+                mLruRecorder.clear()
+            }
         }
 
         // 得到记录器大小
         @JvmStatic
-        fun getRecordSize(): Int = mLruRecorder.size
+        fun getRecordSize(): Int = synchronized(mLruRecorder) {
+            mLruRecorder.size
+        }
     }
 
     // 当前元素个数
-    private var mSize = 0
+    private var size = 0
 
     private var head = RecordEntry()
 
@@ -64,51 +79,29 @@ class LruRecorder private constructor(
         tail.prev = head
     }
 
-    override val entries: MutableSet<MutableMap.MutableEntry<Int, Record?>>
-        get(): MutableSet<MutableMap.MutableEntry<Int, Record?>> {
-            val hashSet = HashSet<MutableMap.MutableEntry<Int, Record?>>()
-            mCacheMap.forEach { key, value ->
-                hashSet.add(RecordEntry(key, value.value))
-            }
-            return hashSet
-        }
+    private val values = mCacheMap.valueIterator()
 
-    override val keys: MutableSet<Int>
-        get() = mCacheMap.keyIterator().asSequence().toHashSet()
-
-    override val size: Int
-        get() = mSize
-
-    override val values: MutableCollection<Record?>
-        get() {
-            val tempValues = ArrayList<Record?>(size)
-            mCacheMap.valueIterator().forEach {
-                tempValues.add(it.value)
-            }
-            return tempValues
-        }
-
-    override fun containsKey(key: Int): Boolean {
+    fun containsKey(key: Int): Boolean {
         return mCacheMap.containsKey(key)
     }
 
-    override fun containsValue(value: Record?): Boolean {
+    fun containsValue(value: Record?): Boolean {
         value ?: return false
         return mCacheMap.indexOfKey(value.id) >= 0
     }
 
-    override fun get(key: Int): Record? {
+    fun get(key: Int): Record? {
         val tempValue = mCacheMap.get(key) ?: return null
         moveToHead(tempValue)
         return tempValue.value
     }
 
-    override fun isEmpty(): Boolean {
+    fun isEmpty(): Boolean {
         return mCacheMap.isEmpty()
     }
 
-    override fun clear() {
-        mSize = 0
+    fun clear() {
+        size = 0
         head = RecordEntry()
         tail = RecordEntry()
         head.next = tail
@@ -116,19 +109,19 @@ class LruRecorder private constructor(
         mCacheMap.clear()
     }
 
-    override fun put(key: Int, value: Record?): Record? {
+    fun put(key: Int, value: Record?): Record? {
         var tempNode = mCacheMap[key]
         if (tempNode == null) {
             tempNode = RecordEntry(key, value)
             mCacheMap.put(key, tempNode)
             addToHead(tempNode)
-            mSize ++
+            size ++
             if (size > capacity) {
                 val tailNode = removeTail()
                 if (tailNode != null) {
                     mCacheMap.remove(tailNode.key)
                 }
-                mSize --
+                size --
             }
         } else {
             tempNode.value = value
@@ -137,17 +130,17 @@ class LruRecorder private constructor(
         return value
     }
 
-    override fun putAll(from: Map<out Int, Record?>) {
+    fun putAll(from: Map<out Int, Record?>) {
         for (entry in from) {
             put(entry.key, entry.value)
         }
     }
 
-    override fun remove(key: Int): Record? {
+    fun remove(key: Int): Record? {
         val tempNode = mCacheMap[key] ?: return null
         removeNode(tempNode)
         mCacheMap.remove(tempNode.key)
-        mSize --
+        size --
         return tempNode.value
     }
 

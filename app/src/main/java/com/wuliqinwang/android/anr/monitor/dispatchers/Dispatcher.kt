@@ -35,7 +35,9 @@ interface Dispatcher : Printer {
                 onDispatched(getWhat(), handler)
             }
         }
-        onFinishDispatch()
+        if(isDispatched(messageInfo)) {
+            onFinishDispatch()
+        }
     }
 
     // 消息结束调度
