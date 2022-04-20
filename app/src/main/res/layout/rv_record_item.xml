@@ -17,6 +17,19 @@
         android:layout_marginEnd="5dp"
         android:onClick="@{()-> anrVm.rvItemClick(record)}">
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/recordIdTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:showType="@{5}"
+            app:recordInfo="@{record}"
+            tools:text="recordId: id"
+            android:textSize="@dimen/text_size_12"
+            android:textColor="@color/black"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/recordTypeTv"/>
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/recordTypeTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -25,8 +38,7 @@
             tools:text="type: 普通消息"
             android:textSize="@dimen/text_size_12"
             android:textColor="@color/black"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recordIdTv"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/wallTv"/>
         <androidx.appcompat.widget.AppCompatTextView

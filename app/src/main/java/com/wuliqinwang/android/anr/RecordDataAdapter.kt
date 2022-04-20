@@ -25,6 +25,7 @@ class RecordDataAdapter(
                 2 -> "count: ${record.count}"
                 3 -> "what: ${record.what}"
                 4 -> "handler: ${record.handler}"
+                5 -> "recordId: ${record.id}"
                 else -> ""
             }
         }

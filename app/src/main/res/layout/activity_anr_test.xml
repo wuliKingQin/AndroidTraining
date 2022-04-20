@@ -55,7 +55,7 @@
             android:id="@+id/timeConsumingBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="@{()->vm.timeConsumingClick()}"
+            android:onClick="@{(view)->vm.timeConsumingClick(view)}"
             android:text="执行耗时操作"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"

@@ -39,15 +39,15 @@ class LruRecorder private constructor(
         // 获取记录器里面的所有的值
         @JvmStatic
         fun getAllRecords(): List<Record> {
-            val tempList = ArrayList<Record>(getRecordSize())
             synchronized(mLruRecorder) {
-                for (value in mLruRecorder.values) {
+                val tempList = ArrayList<Record>(getRecordSize())
+                mLruRecorder.mCacheMap.forEach { _, value ->
                     value.value?.apply {
                         tempList.add(this)
                     }
                 }
+                return tempList
             }
-            return tempList
         }
 
         // 清除所有的记录信息
@@ -79,7 +79,7 @@ class LruRecorder private constructor(
         tail.prev = head
     }
 
-    private val values = mCacheMap.valueIterator()
+    private var values = mCacheMap.valueIterator()
 
     fun containsKey(key: Int): Boolean {
         return mCacheMap.containsKey(key)

@@ -14,6 +14,7 @@ import com.utopia.android.ulog.ULog
 import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
 import com.wuliqinwang.android.anr.monitor.cache.Record
 import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
+import com.wuliqinwang.android.bottombar.BottomBarActivity
 import com.wuliqinwang.android.common_lib.launch
 import com.wuliqinwang.android.mvvm.DataModel
 import com.wuliqinwang.android.mvvm.MvvmTestActivity
@@ -78,11 +79,12 @@ class AnrViewModel : ViewModel() {
         }
     }
 
-    fun timeConsumingClick() {
-        val list = arrayListOf(0.4f, 5f, 0.3f, 3f, 0.01f)
-        for (time in list) {
-            mUiHandler.post(ConsumingRunnable(time))
-        }
+    fun timeConsumingClick(view: View) {
+//        val list = arrayListOf(0.4f, 5f, 0.3f, 3f, 0.01f)
+//        for (time in list) {
+//            mUiHandler.post(ConsumingRunnable(time))
+//        }
+        view.context.launch(BottomBarActivity::class.java)
     }
 
     fun rvItemClick(record: Record) {
@@ -99,120 +101,6 @@ class AnrViewModel : ViewModel() {
                     ULog.d("AnrViewModel", "ConsumingRunnable executeTime=${executeTime}")
                     break
                 }
-            }
-        }
-    }
-
-    class MainThreadMessageScheduleCounter(
-        private var callback: (String) -> Unit
-    ): Printer{
-
-        companion object {
-            private const val MAX_MESSAGE_SIZE = 100
-        }
-
-        private var mCurrentMsgTime: Long = 0
-        private var mCurrentMessageId: Long = 0
-        private val mCacheMessageList by lazy {
-            LinkedHashMap<Long, Msg>(MAX_MESSAGE_SIZE, 2f, true)
-        }
-
-        private val mStackThread by lazy {
-            HandlerThread("AnrStack").apply {
-                start()
-            }
-        }
-
-        private val mStackHandler by lazy {
-            Handler(mStackThread.looper)
-        }
-
-        private val mTimeoutCheckRunnable by lazy(LazyThreadSafetyMode.NONE) {
-            TimeoutCheckRunnable()
-        }
-
-
-        init {
-            Looper.getMainLooper().setMessageLogging(this)
-        }
-
-        override fun println(message: String?) {
-            when {
-                message?.startsWith(">>>>> Dispatching to ") == true -> {
-                    startRunMessage()
-                }
-                message?.startsWith("<<<<< Finished to ") == true -> {
-                    endRunMessage()
-                }
-            }
-        }
-
-        private fun startRunMessage() {
-
-            mCurrentMsgTime = System.currentTimeMillis()
-            if (mCurrentMessageId <= 0) {
-                mCurrentMessageId = System.currentTimeMillis()
-            }
-            mStackHandler.postDelayed(mTimeoutCheckRunnable, 300)
-        }
-
-        private fun endRunMessage() {
-            mStackHandler.removeCallbacks(mTimeoutCheckRunnable)
-            val diffTime = System.currentTimeMillis() - mCurrentMsgTime
-            ULog.d("AnrViewModel", "记录消息个数：${getMsgSize()} diffTime: $diffTime")
-            var msg = mCacheMessageList[mCurrentMessageId]
-            if (msg != null) {
-                msg.wall += diffTime
-                if (msg.wall >= 300) {
-                    mCurrentMessageId = 0
-                    ULog.d("AnrViewModel", "记录消息个数：${getMsgSize()} 当前消息耗时: ${msg.wall}")
-                }
-            } else {
-                msg = Msg(wall = diffTime, count = 1)
-                mCacheMessageList[mCurrentMessageId] = msg
-            }
-        }
-
-        fun getMsgSize(): Int = mCacheMessageList.size
-
-        inner class TimeoutCheckRunnable: Runnable {
-
-            override fun run() {
-                mStackHandler.post(GainMainStackRunnable(mCurrentMessageId))
-            }
-        }
-
-        // 耗时消息统计模型
-        data class Msg(
-            var id: Long = 0,
-            var wall: Long = 0,
-            var name: String = "普通消息",
-            var count: Int = 0,
-            var stackInfo: String? = null
-        ): Serializable
-
-        inner class GainMainStackRunnable(
-            private var msgId: Long
-        ): Runnable{
-            override fun run() {
-                val stackBuilder = StringBuilder()
-                Looper.getMainLooper().thread.stackTrace.forEachIndexed { index, stackTraceElement ->
-                    if (index != 0) {
-                        stackBuilder.append("\n")
-                    }
-                    stackBuilder.append(stackTraceElement.toString())
-                }
-                var msg: Msg?
-                val tempMsgList = mCacheMessageList
-                synchronized(tempMsgList) {
-                    msg = tempMsgList[msgId]
-                    if (msg == null) {
-                        msg = Msg(msgId)
-                        tempMsgList[msgId] = msg!!
-                    }
-                }
-                msg?.stackInfo = stackBuilder.toString()
-                ULog.d("AnrViewModel",  msg?.stackInfo)
             }
         }
     }
