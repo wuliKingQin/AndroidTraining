@@ -1,6 +1,7 @@
 package com.wuliqinwang.android.anr.monitor.dispatchers
 
 import android.util.Printer
+import java.util.concurrent.atomic.AtomicInteger
 
 // 抽象一个消息调度器的接口
 interface Dispatcher : Printer {
@@ -17,6 +18,11 @@ interface Dispatcher : Printer {
 
         // 无效What
         const val INVALID_WHAT = Int.MIN_VALUE
+
+        // 记录Id生成器
+        val idGenerator by lazy {
+            AtomicInteger(-1)
+        }
     }
 
     // 消息类型
