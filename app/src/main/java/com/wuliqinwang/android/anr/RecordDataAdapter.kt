@@ -20,7 +20,7 @@ class RecordDataAdapter(
         @BindingAdapter("showType", "recordInfo")
         fun setRecordInfo(targetView: TextView, showType: Int, record: Record) {
             targetView.text = when(showType) {
-                0 -> "type: ${record.type}"
+                0 -> "des: ${record.des}"
                 1 -> "wall: ${record.wall}毫秒"
                 2 -> "count: ${record.count}"
                 3 -> "what: ${record.what}"

@@ -9,7 +9,9 @@ import com.wuliqinwang.android.anr.monitor.checktime.cancelTimeout
 import com.wuliqinwang.android.anr.monitor.checktime.checkTimeout
 import com.wuliqinwang.android.anr.monitor.dispatchers.AbstractDispatcher
 import com.wuliqinwang.android.anr.monitor.dispatchers.Dispatcher
+import com.wuliqinwang.android.anr.monitor.what.What
 import java.lang.AssertionError
+import java.nio.BufferOverflowException
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -41,8 +43,10 @@ class MessageMonitor(
             }
             private const val DISPATCH_TIME_OUT_TASK = "dispatchTimeoutTask"
             private const val DISPATCH_TIME_OUT_TIME = 1000L
+            private const val ACTIVITY_THREAD_HANDLER = "(android.app.ActivityThread\$H)"
         }
 
+        private var mIdleStartTime = 0L
         // 保存当前的消息Id
         private var mRecordId = -1
 
@@ -55,71 +59,98 @@ class MessageMonitor(
         // 用于保存当前生成的记录
         private var mCurRecord: Record? = null
 
-        private val interceptors by lazy {
-            ArrayList<DispatchInterceptor>()
-        }
-
-        // 分发链
-        private var dispatchChain: DispatchInterceptor.Chain? = null
-
-        init {
-            interceptors.add(ActThreadHDispatchInterceptor())
-            interceptors.add(GainOrCreateRecordDispatchInterceptor())
+        // Handler消息处理类型
+        private val mWhats by lazy {
+            arrayListOf(
+                What.AT_HANDLER_WHAT_100,
+                What.AT_HANDLER_WHAT_101,
+                What.AT_HANDLER_WHAT_103,
+                What.AT_HANDLER_WHAT_104,
+                What.AT_HANDLER_WHAT_105,
+                What.AT_HANDLER_WHAT_106,
+                What.AT_HANDLER_WHAT_107,
+                What.AT_HANDLER_WHAT_109,
+                What.AT_HANDLER_WHAT_113,
+                What.AT_HANDLER_WHAT_114,
+                What.AT_HANDLER_WHAT_115,
+                What.AT_HANDLER_WHAT_116,
+                What.AT_HANDLER_WHAT_121,
+                What.AT_HANDLER_WHAT_122,
+                What.AT_HANDLER_WHAT_126,
+                What.AT_HANDLER_WHAT_145,
+                What.AT_HANDLER_WHAT_159,
+                What.AT_HANDLER_WHAT_160
+            )
         }
 
         private val mStackExecutor by lazy {
             DispatchStackExecutor()
         }
 
-        private val dispatchMessage by lazy {
-            DispatchMessage()
-        }
-
         override fun onDispatching(what: Int, handler: String?) {
-            if (dispatchMessage.recordId < 0) {
-                dispatchMessage.recordId = recordIdGenerator.incrementAndGet()
+            mStartTime = System.currentTimeMillis()
+            if (mIdleStartTime > 0 && mStartTime - mIdleStartTime >= 300) {
+                getOrCreateRecord(recordIdGenerator.incrementAndGet()).apply {
+                    des = "idle记录"
+                    wall = mStartTime - mIdleStartTime
+                    count += 1
+                    this.what = 0
+                    this.handler = null
+                }
             }
-            dispatchMessage.what = what
-            dispatchMessage.handler = handler
-            dispatchMessage.startDispatchTime = System.currentTimeMillis()
+            if (mRecordId < 0) {
+                mRecordId = recordIdGenerator.incrementAndGet()
+            }
             mStackExecutor.addId(mRecordId)
             checkTimeout(DISPATCH_TIME_OUT_TASK, DISPATCH_TIME_OUT_TIME, mStackExecutor)
         }
 
         override fun onDispatched(what: Int, handler: String?) {
+            mIdleStartTime = System.currentTimeMillis()
             mStackExecutor.removeId()
-            dispatchMessage.endDispatchTime = System.currentTimeMillis()
+            mConsumingTime = mIdleStartTime - mStartTime
             ULog.d(TAG, "recordId: $mRecordId what: $what handler: $handler wall: $mConsumingTime")
             cancelTimeout(DISPATCH_TIME_OUT_TASK, DISPATCH_TIME_OUT_TIME)
             val record = mCurRecord ?: getOrCreateRecord()
-            if (record.wall + mConsumingTime > 300) {
-                if (record.wall > 0 && record.wall > 200 && (mConsumingTime - record.wall) >= 0) {
-                    newSingleRecord(what, handler, record)
-                } else {
-                    statisticalRecord(what, handler, record)
+            when {
+                isActivityThreadHandler(what, handler) -> {
+                    val whatRecord = if (record.count == 0 && record.wall == 0L) {
+                        record
+                    } else {
+                        getOrCreateRecord(recordIdGenerator.incrementAndGet())
+                    }
+                    whatRecord.des = mWhats.firstOrNull { it.what == what }?.des ?: whatRecord.des
+                    whatRecord.what = what
+                    whatRecord.count += 1
+                    whatRecord.wall = mConsumingTime
+                    whatRecord.handler = handler
+                    mRecordId = -1
                 }
-                mRecordId = -1
-                ULog.d(
-                    TAG,
-                    "recordId: $mRecordId what: $what handler: $handler wall: ${record.wall} record size: ${LruRecorder.getRecordSize()}"
-                )
-            } else {
-                statisticalRecord(what, handler, record)
+                record.wall + mConsumingTime > 300 -> {
+                    if (record.wall > 0 && record.wall > 200 && (mConsumingTime - record.wall) >= 0) {
+                        newSingleRecord(what, handler, record)
+                    } else {
+                        statisticalRecord(what, handler, record)
+                    }
+                    mRecordId = -1
+                    ULog.d(
+                        TAG,
+                        "recordId: $mRecordId what: $what handler: $handler wall: ${record.wall} record size: ${LruRecorder.getRecordSize()}"
+                    )
+                }
+                else -> statisticalRecord(what, handler, record)
             }
-            doReal()
         }
 
-        private fun doReal() {
-            if (dispatchChain == null) {
-                dispatchChain = RealDispatchInterceptorChain(interceptors)
-            }
-            dispatchChain?.process(dispatchMessage)
+        private fun isActivityThreadHandler(what: Int, handler: String?): Boolean {
+            val isHasWhat = mWhats.any { it.what == what }
+            return isHasWhat && handler == ACTIVITY_THREAD_HANDLER
         }
 
         // 根据记录Id得到或创建一个记录对象
-        private fun getOrCreateRecord(): Record {
-            return LruRecorder.getRecord(mRecordId) ?: LruRecorder.putRecord(
-                Record(mRecordId, what = getWhat(), handler = handler)
+        private fun getOrCreateRecord(recordId: Int = mRecordId): Record {
+            return LruRecorder.getRecord(recordId) ?: LruRecorder.putRecord(
+                Record(recordId, what = getWhat(), handler = handler)
             )
         }
 
@@ -145,102 +176,6 @@ class MessageMonitor(
                 count += 1
             }
         }
-
-        data class DispatchMessage(
-            var recordId: Int = 0,
-            var what: Int = 0,
-            var handler: String? = null,
-            var startDispatchTime: Long = 0,
-            var endDispatchTime: Long = 0
-        )
-
-        interface DispatchInterceptor {
-
-            fun intercepted(next: Chain): Record
-
-            interface Chain {
-
-                // 调度的消息
-                fun getDispatchMessage(): DispatchMessage
-
-                // 处理器
-                fun process(message: DispatchMessage): Record
-            }
-        }
-
-        class GainOrCreateRecordDispatchInterceptor: DispatchInterceptor {
-            override fun intercepted(next: DispatchInterceptor.Chain): Record {
-                val message = next.getDispatchMessage()
-                return LruRecorder.getRecord(message.recordId) ?: Record(message.recordId).apply {
-                    count += 1
-                    LruRecorder.putRecord(this)
-                }
-            }
-        }
-
-        class ActThreadHDispatchInterceptor: DispatchInterceptor{
-
-            companion object {
-                private const val ACTIVITY_THREAD_HANDLER = "(android.app.ActivityThread\$H)"
-            }
-
-            override fun intercepted(next: DispatchInterceptor.Chain): Record {
-                val message = next.getDispatchMessage()
-                if (message.handler == ACTIVITY_THREAD_HANDLER) {
-                    val consuming = message.endDispatchTime - message.startDispatchTime
-                    val record = next.process(message)
-                    if (record.count <= 1 && record.wall == 0L) {
-                        record.apply {
-                            wall = consuming
-                            what = message.what
-                            handler = message.handler
-                            if (count == 0) {
-                                count += 1
-                            }
-                        }
-                    } else {
-                        val recordId = MessageDispatcher.recordIdGenerator.incrementAndGet()
-                        Record(recordId).apply {
-                            wall = consuming
-                            what = message.what
-                            handler = message.handler
-                            count += 1
-                            LruRecorder.putRecord(this)
-                        }
-                        message.recordId = -1
-                    }
-                    return record
-                }
-                return next.process(message)
-            }
-        }
-
-        class RealDispatchInterceptorChain(
-            private var interceptors: List<DispatchInterceptor>,
-            private var execIndex: Int = 0
-        ) : DispatchInterceptor.Chain {
-
-            private lateinit var message: DispatchMessage
-
-            override fun process(message: DispatchMessage): Record {
-                this.message = message
-                return doProcess()
-            }
-
-            override fun getDispatchMessage(): DispatchMessage {
-                return message
-            }
-
-            private fun doProcess(): Record {
-                if (execIndex < 0 || execIndex >= interceptors.size) {
-                    throw AssertionError("")
-                }
-                val nextChain = RealDispatchInterceptorChain(interceptors, execIndex + 1)
-                val interceptor = interceptors[execIndex]
-                return interceptor.intercepted(nextChain)
-            }
-        }
-
 
         class DispatchStackExecutor : Runnable {
 

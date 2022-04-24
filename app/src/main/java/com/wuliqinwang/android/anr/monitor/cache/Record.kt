@@ -9,6 +9,8 @@ data class Record(
     var id: Int = 0,
     // 消息类型
     var type: Int = 0,
+    // 记录描述，默认显示"普通记录"
+    var des: String? = "普通记录",
     // 消息对应的类型
     var what: Int = 0,
     // 消息对应的处理器，该值是最后一个消息Handler
@@ -28,6 +30,7 @@ data class Record(
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
         parcel.readInt(),
+        parcel.readString(),
         parcel.readInt(),
         parcel.readString(),
         parcel.readLong(),
@@ -41,6 +44,7 @@ data class Record(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)
         parcel.writeInt(type)
+        parcel.writeString(des)
         parcel.writeInt(what)
         parcel.writeString(handler)
         parcel.writeLong(wall)
