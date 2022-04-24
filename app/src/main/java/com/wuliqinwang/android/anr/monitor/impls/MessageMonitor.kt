@@ -63,8 +63,8 @@ class MessageMonitor(
         private var dispatchChain: DispatchInterceptor.Chain? = null
 
         init {
-            interceptors.add(DefaultDispatchInterceptor())
             interceptors.add(ActThreadHDispatchInterceptor())
+            interceptors.add(GainOrCreateRecordDispatchInterceptor())
         }
 
         private val mStackExecutor by lazy {
@@ -76,10 +76,9 @@ class MessageMonitor(
         }
 
         override fun onDispatching(what: Int, handler: String?) {
-            if (mRecordId < 0) {
-                mRecordId = recordIdGenerator.incrementAndGet()
+            if (dispatchMessage.recordId < 0) {
+                dispatchMessage.recordId = recordIdGenerator.incrementAndGet()
             }
-            dispatchMessage.recordId = mRecordId
             dispatchMessage.what = what
             dispatchMessage.handler = handler
             dispatchMessage.startDispatchTime = System.currentTimeMillis()
@@ -169,13 +168,13 @@ class MessageMonitor(
             }
         }
 
-        class DefaultDispatchInterceptor: DispatchInterceptor {
-
+        class GainOrCreateRecordDispatchInterceptor: DispatchInterceptor {
             override fun intercepted(next: DispatchInterceptor.Chain): Record {
                 val message = next.getDispatchMessage()
-                val timeOfConsuming = message.endDispatchTime - message.startDispatchTime
-                val record = LruRecorder.getRecord(message.recordId)
-                return next.process(message)
+                return LruRecorder.getRecord(message.recordId) ?: Record(message.recordId).apply {
+                    count += 1
+                    LruRecorder.putRecord(this)
+                }
             }
         }
 
@@ -188,7 +187,29 @@ class MessageMonitor(
             override fun intercepted(next: DispatchInterceptor.Chain): Record {
                 val message = next.getDispatchMessage()
                 if (message.handler == ACTIVITY_THREAD_HANDLER) {
-                    Record(message.what)
+                    val consuming = message.endDispatchTime - message.startDispatchTime
+                    val record = next.process(message)
+                    if (record.count <= 1 && record.wall == 0L) {
+                        record.apply {
+                            wall = consuming
+                            what = message.what
+                            handler = message.handler
+                            if (count == 0) {
+                                count += 1
+                            }
+                        }
+                    } else {
+                        val recordId = MessageDispatcher.recordIdGenerator.incrementAndGet()
+                        Record(recordId).apply {
+                            wall = consuming
+                            what = message.what
+                            handler = message.handler
+                            count += 1
+                            LruRecorder.putRecord(this)
+                        }
+                        message.recordId = -1
+                    }
+                    return record
                 }
                 return next.process(message)
             }
