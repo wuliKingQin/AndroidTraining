@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import com.utopia.android.ulog.ULog
 import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
 import com.wuliqinwang.android.anr.monitor.cache.Record
+import com.wuliqinwang.android.anr.monitor.config.Config
 import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
 import com.wuliqinwang.android.bottombar.BottomBarActivity
 import com.wuliqinwang.android.common_lib.launch
@@ -41,7 +42,11 @@ class AnrViewModel : ViewModel() {
     }
 
     private val mMonitor by lazy {
-        MessageMonitor(Looper.getMainLooper())
+        val config = Config.Builder()
+            .setCumulativeThreshold(300L)
+            .setDispatchCheckTime(1000L)
+            .builder()
+        MessageMonitor(Looper.getMainLooper(), config)
     }
 
     // 开始反射点击处理

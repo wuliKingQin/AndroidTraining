@@ -1,5 +1,8 @@
 package com.wuliqinwang.android.anr.monitor.dispatchers
 
+import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
+import com.wuliqinwang.android.anr.monitor.cache.Record
+
 // 分发记录器
 data class Recorder(
     // 消息类型
@@ -11,8 +14,12 @@ data class Recorder(
     // 分发结束时间，也是消息队列空闲的开始时间
     var idleStartTime: Long = 0L,
     // 记录Id
-    var recordId: Int = 0
+    var recordId: Int = INVALID_ID
 ) {
+    companion object {
+        // 无效Id
+        const val INVALID_ID = -1
+    }
     // 计算分发耗时时间
     fun calDispatchConsuming() = idleStartTime - dispatchStartTime
 
@@ -39,6 +46,20 @@ data class Recorder(
     // 调度完成
     fun dispatchFinish() {
         idleStartTime = System.currentTimeMillis()
+    }
+
+    // 重置记录Id
+    fun resetRecordId() {
+        recordId = INVALID_ID
+    }
+
+    // 创建一个新的记录对象并保存到缓存中
+    @JvmOverloads
+    inline fun buildRecord(recordId: Int= INVALID_ID, action: Record.()-> Unit = {}): Record{
+        return Record(if (recordId != INVALID_ID) recordId else produceId()).apply {
+            action()
+            LruRecorder.putRecord(this)
+        }
     }
 }
 
