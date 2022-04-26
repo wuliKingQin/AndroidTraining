@@ -1,30 +1,19 @@
 package com.wuliqinwang.android.anr
 
 import android.os.Handler
-import android.os.HandlerThread
 import android.os.Looper
-import android.os.Message
 import android.util.Printer
 import android.view.View
-import android.widget.TextView
-import androidx.databinding.BindingAdapter
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.utopia.android.ulog.ULog
 import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
 import com.wuliqinwang.android.anr.monitor.cache.Record
 import com.wuliqinwang.android.anr.monitor.config.Config
+import com.wuliqinwang.android.anr.monitor.dispatchers.Interceptor
 import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
 import com.wuliqinwang.android.bottombar.BottomBarActivity
 import com.wuliqinwang.android.common_lib.launch
-import com.wuliqinwang.android.mvvm.DataModel
-import com.wuliqinwang.android.mvvm.MvvmTestActivity
-import java.io.Serializable
-import java.util.*
-import kotlin.collections.LinkedHashMap
-import kotlin.random.Random
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
 
 class AnrViewModel : ViewModel() {
 
@@ -43,9 +32,19 @@ class AnrViewModel : ViewModel() {
 
     private val mMonitor by lazy {
         val config = Config.Builder()
+            .addInterceptor(object : Interceptor {
+                override fun onIntercepted(next: Interceptor.Chain): Record {
+                    val recorder = next.getRecorder()
+                    val record = next.process(next.getRecorder())
+                    if (recorder.recordId == -1) {
+                        ULog.d("=====Interceptor=====", "可以新建记录Id了")
+                    }
+                    return record
+                }
+            })
             .setCumulativeThreshold(300L)
             .setDispatchCheckTime(1000L)
-            .builder()
+            .build()
         MessageMonitor(Looper.getMainLooper(), config)
     }
 

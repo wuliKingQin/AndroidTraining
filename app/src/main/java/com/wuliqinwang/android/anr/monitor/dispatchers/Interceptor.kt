@@ -40,6 +40,7 @@ interface Interceptor {
 
     // 抽象处理前的接口
     interface ProcessBefore {
+
         // 执行处理前的操作, 在该方法中不能调用process方法
         fun processBefore(recorder: Recorder)
 

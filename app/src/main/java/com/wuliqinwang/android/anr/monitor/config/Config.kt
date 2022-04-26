@@ -1,5 +1,7 @@
 package com.wuliqinwang.android.anr.monitor.config
 
+import com.wuliqinwang.android.anr.monitor.checktime.CheckTimer
+import com.wuliqinwang.android.anr.monitor.dispatchers.Dispatcher
 import com.wuliqinwang.android.anr.monitor.dispatchers.Interceptor
 
 // 监控配置信息
@@ -12,12 +14,18 @@ class Config private constructor(
     val cumulativeThreshold = builder.cumulativeThreshold
     // 拦截器
     val interceptors = builder.interceptors
+    // 消息调度器
+    val dispatcher = builder.dispatcher
+    // 超时检查器
+    val checkTimer = builder.checkTimer
 
     // 配置构建器
     data class Builder @JvmOverloads constructor(
         internal var dispatchCheckTime: Long = 1000L,
         internal var cumulativeThreshold: Long = 300L,
-        internal var interceptors: ArrayList<Interceptor>? = null
+        internal var interceptors: ArrayList<Interceptor>? = null,
+        internal var dispatcher: Dispatcher? = null,
+        internal var checkTimer: CheckTimer? = null
     ) {
 
         // 设置调度超时时间，超过后就直接去获取对应栈信息
@@ -43,8 +51,20 @@ class Config private constructor(
             return this
         }
 
+        // 设置调度器
+        fun setDispatcher(dispatcher: Dispatcher?): Builder {
+            this.dispatcher = dispatcher
+            return this
+        }
+
+        // 设置超时检查器
+        fun setCheckTimer(checkTimer: CheckTimer?): Builder {
+            this.checkTimer = checkTimer
+            return this
+        }
+
         // 构建配置类
-        fun builder(): Config {
+        fun build(): Config {
             return Config(this)
         }
     }

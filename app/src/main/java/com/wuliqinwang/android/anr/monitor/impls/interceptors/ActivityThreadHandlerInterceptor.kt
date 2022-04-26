@@ -43,10 +43,13 @@ class ActivityThreadHandlerInterceptor: Interceptor {
             val whatRecord = if (record.count == 0 && record.wall == 0L) {
                 record
             } else {
-                recorder.buildRecord()
+                record.newBuilder()
+                    .setId(recorder.produceId())
+                    .setCount(0)
+                    .build()
             }
             whatRecord.des = getDes(recorder) ?: whatRecord.des
-            whatRecord.count += 1
+            whatRecord.count = 1
             whatRecord.what = recorder.what
             whatRecord.wall = recorder.calDispatchConsuming()
             whatRecord.handler = recorder.handler

@@ -4,10 +4,11 @@ import com.wuliqinwang.android.anr.monitor.cache.Record
 import com.wuliqinwang.android.anr.monitor.dispatchers.Interceptor
 import com.wuliqinwang.android.anr.monitor.dispatchers.Recorder
 
-// 将一些特殊的记录进行单独记录的拦截器
+// 将一些特殊的记录进行单独记录的拦截器，比如说
+// 消息队列空闲时间超过指定阈值和单个消息调度时间超过阈值的情况
 class DisperseInterceptor(
     private val cumulativeThreshold: Long
-): Interceptor {
+) : Interceptor {
 
     override fun onInterceptedBefore(before: Interceptor.ProcessBefore) {
         val recorder = before.getRecorder()
@@ -15,6 +16,7 @@ class DisperseInterceptor(
         if (recorder.idleStartTime > 0) {
             val idleConsuming = recorder.dispatchStartTime - recorder.idleStartTime
             if (idleConsuming >= cumulativeThreshold) {
+                // 消息队列空闲时间超过阈值的情况
                 recorder.buildRecord {
                     des = "idle记录"
                     wall = idleConsuming
@@ -30,29 +32,19 @@ class DisperseInterceptor(
         val recorder = next.getRecorder()
         val record = next.process(recorder)
         val dispatchConsuming = recorder.calDispatchConsuming()
-        if (recorder.recordId != Recorder.INVALID_ID && record.wall + dispatchConsuming > cumulativeThreshold) {
-            if (record.wall > 0 && dispatchConsuming >= cumulativeThreshold) {
-                recorder.buildRecord {
-                    what = recorder.what
-                    handler = recorder.handler
-                    count += 1
-                    wall = dispatchConsuming
-                }
-            } else {
-                statisticalRecord(recorder, record)
+        if (recorder.recordId != Recorder.INVALID_ID) {
+            if (recorder.isResetRecordId(record, cumulativeThreshold) &&
+                record.wall > 0 && dispatchConsuming >= cumulativeThreshold) {
+                // 判断单个消息调度耗时超过阈值的情况
+                record.newBuilder()
+                    .setId(recorder.produceId())
+                    .setCount(1)
+                    .setWall(dispatchConsuming)
+                    .build()
+                record.stackInfo = null
+                recorder.resetRecordId()
             }
-            recorder.resetRecordId()
         }
         return record
-    }
-
-    // 统计耗时段的消息到一个记录里面
-    private fun statisticalRecord(recorder: Recorder, record: Record) {
-        record.apply {
-            this.what = recorder.what
-            this.handler = recorder.handler
-            wall += recorder.calDispatchConsuming()
-            count += 1
-        }
     }
 }

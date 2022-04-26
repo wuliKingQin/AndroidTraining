@@ -12,5 +12,5 @@ abstract class AbstractMonitor(
     protected var config: Config
 ): Monitor {
     // 声明一个分发器，给子类自己实现
-    protected abstract var dispatcher: Dispatcher?
+    protected var dispatcher = config.dispatcher
 }

@@ -53,6 +53,11 @@ data class Recorder(
         recordId = INVALID_ID
     }
 
+    // 用于判断是否需要进行重置
+    fun isResetRecordId(record: Record, cumulativeThreshold: Long): Boolean {
+        return record.wall + calDispatchConsuming() > cumulativeThreshold
+    }
+
     // 创建一个新的记录对象并保存到缓存中
     @JvmOverloads
     inline fun buildRecord(recordId: Int= INVALID_ID, action: Record.()-> Unit = {}): Record{

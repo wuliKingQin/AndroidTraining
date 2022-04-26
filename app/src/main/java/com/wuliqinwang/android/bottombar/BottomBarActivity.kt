@@ -34,6 +34,16 @@ class BottomBarActivity: BaseActivity<ActivityBottomBarBinding>(){
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val startTime = System.currentTimeMillis()
+        while (true) {
+            if (System.currentTimeMillis() - startTime > 5000) {
+                break
+            }
+        }
+    }
+
     override fun ActivityBottomBarBinding.onBindDataForView(savedInstanceState: Bundle?) {
         pageContent.isUserInputEnabled = false
         val on = OnlineBottomBarCreator(arrayListOf(

@@ -1,12 +1,11 @@
-package com.wuliqinwang.android.anr.monitor.impls
+package com.wuliqinwang.android.anr.monitor.stack
 
-import android.os.Looper
 import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
 import com.wuliqinwang.android.anr.monitor.cache.Record
 import java.util.concurrent.ConcurrentLinkedDeque
 
-// 调度栈获取器，当发生超过指定阈值的时候执行
-class DispatchStackGetter: Runnable {
+// 消息调度栈获取器的实现类
+class DispatchStackGetter: StackGetter {
 
     // 记录Id的队列，因为是异步的，防止获取堆栈的时候，
     // Id发生变化，对应消息不能获取到对应的调度栈
@@ -19,16 +18,14 @@ class DispatchStackGetter: Runnable {
     @Volatile
     private var isTimeout = false
 
-    // 添加记录Id
-    fun addId(id: Int) {
+    override fun addId(id: Int) {
         if (mIdQueue.peekLast() != id) {
             isTimeout = false
             mIdQueue.offerLast(id)
         }
     }
 
-    // 移除记录Id
-    fun removeId() {
+    override fun removeId() {
         if (mIdQueue.isEmpty()) {
             return
         }
@@ -49,17 +46,5 @@ class DispatchStackGetter: Runnable {
             LruRecorder.putRecord(record)
         }
         record.stackInfo = gainStackInfo()
-    }
-
-    // 获取主线程堆栈
-    private fun gainStackInfo(): String {
-        val stackBuilder = StringBuilder()
-        Looper.getMainLooper().thread.stackTrace.forEachIndexed { index, stackTraceElement ->
-            if (index != 0) {
-                stackBuilder.append("\n")
-            }
-            stackBuilder.append(stackTraceElement.toString())
-        }
-        return stackBuilder.toString()
     }
 }
