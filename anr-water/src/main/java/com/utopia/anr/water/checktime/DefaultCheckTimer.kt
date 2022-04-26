@@ -1,6 +1,6 @@
-package com.wuliqinwang.android.anr.monitor.checktime
+package com.utopia.anr.water.checktime
 
-import com.wuliqinwang.android.anr.monitor.stack.StackGetter
+import com.utopia.anr.water.stack.StackGetter
 
 // 默认实现的超时检查器
 // todo 这个地方目前还是比较耗性能的，采用子线程创建Looper来实现的延迟执行，

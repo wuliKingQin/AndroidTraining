@@ -13,6 +13,8 @@ import com.tencent.matrix.trace.TracePlugin
 import com.tencent.matrix.trace.config.TraceConfig
 import com.utopia.android.ulog.ULog
 import com.utopia.android.ulog.config.UConfig
+import com.utopia.anr.water.Water
+import com.utopia.anr.water.config.Config
 import java.io.File
 
 
@@ -20,6 +22,7 @@ import java.io.File
 class TrainingApplication: Application() {
     override fun onCreate() {
         super.onCreate()
+        initWaterMonitor()
         val filePath = File(externalCacheDir?.absolutePath, "log").path
         val config = UConfig.Builder()
             .setCacheLogDir(filePath)
@@ -46,6 +49,13 @@ class TrainingApplication: Application() {
 
         Matrix.with().startAllPlugins()
         ULog.d("TrainingApplication", "thread: ${Thread.currentThread()}")
+    }
+
+    private fun initWaterMonitor() {
+        val config = Config.Builder()
+            .setDebug(BuildConfig.DEBUG)
+            .build()
+        Water.init(config)
     }
 
     override fun attachBaseContext(base: Context?) {

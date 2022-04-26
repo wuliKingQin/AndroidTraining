@@ -84,6 +84,7 @@ dependencies {
     implementation project(path: ':act-register-annotation')
 //    implementation project(path: ':hotfix-patch')
     implementation project(path: ':common-lib')
+    implementation project(path: ':anr-water')
     kapt project(path: ':act-register-compiler')
 }
 

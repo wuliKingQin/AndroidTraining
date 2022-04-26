@@ -7,11 +7,8 @@ import android.view.View
 import androidx.databinding.ObservableField
 import androidx.lifecycle.ViewModel
 import com.utopia.android.ulog.ULog
-import com.wuliqinwang.android.anr.monitor.cache.LruRecorder
-import com.wuliqinwang.android.anr.monitor.cache.Record
-import com.wuliqinwang.android.anr.monitor.config.Config
-import com.wuliqinwang.android.anr.monitor.dispatchers.Interceptor
-import com.wuliqinwang.android.anr.monitor.impls.MessageMonitor
+import com.utopia.anr.water.cache.LruRecorder
+import com.utopia.anr.water.cache.Record
 import com.wuliqinwang.android.bottombar.BottomBarActivity
 import com.wuliqinwang.android.common_lib.launch
 
@@ -30,27 +27,12 @@ class AnrViewModel : ViewModel() {
         Handler(Looper.getMainLooper())
     }
 
-    private val mMonitor by lazy {
-        val config = Config.Builder()
-            .addInterceptor(object : Interceptor {
-                override fun onIntercepted(next: Interceptor.Chain): Record {
-                    val recorder = next.getRecorder()
-                    val record = next.process(next.getRecorder())
-                    if (recorder.recordId == -1) {
-                        ULog.d("=====Interceptor=====", "可以新建记录Id了")
-                    }
-                    return record
-                }
-            })
-            .setCumulativeThreshold(300L)
-            .setDispatchCheckTime(1000L)
-            .build()
-        MessageMonitor(Looper.getMainLooper(), config)
-    }
-
     // 开始反射点击处理
     fun startReflectClick() {
-        mMonitor.startMonitor()
+        val list = arrayListOf(0.4f, 5f, 0.3f, 3f, 0.01f)
+        for (time in list) {
+            mUiHandler.post(ConsumingRunnable(time))
+        }
 //        val frameHandler = MainHandlerUtils.getChoreographerHandler()
 //        frameHandler.setValueOfField("mCallback", object : Handler.Callback {
 //            override fun handleMessage(msg: Message): Boolean {
@@ -84,10 +66,6 @@ class AnrViewModel : ViewModel() {
     }
 
     fun timeConsumingClick(view: View) {
-//        val list = arrayListOf(0.4f, 5f, 0.3f, 3f, 0.01f)
-//        for (time in list) {
-//            mUiHandler.post(ConsumingRunnable(time))
-//        }
         view.context.launch(BottomBarActivity::class.java)
     }
 

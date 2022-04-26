@@ -1,8 +1,8 @@
-package com.wuliqinwang.android.anr.monitor.config
+package com.utopia.anr.water.config
 
-import com.wuliqinwang.android.anr.monitor.checktime.CheckTimer
-import com.wuliqinwang.android.anr.monitor.dispatchers.Dispatcher
-import com.wuliqinwang.android.anr.monitor.dispatchers.Interceptor
+import com.utopia.anr.water.checktime.CheckTimer
+import com.utopia.anr.water.dispatchers.Dispatcher
+import com.utopia.anr.water.dispatchers.Interceptor
 
 // 监控配置信息
 class Config private constructor(

@@ -8,7 +8,7 @@
             type="com.wuliqinwang.android.anr.AnrViewModel" />
         <variable
             name="record"
-            type="com.wuliqinwang.android.anr.monitor.cache.Record" />
+            type="com.utopia.anr.water.cache.Record" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="120dp"

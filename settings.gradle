@@ -5,3 +5,4 @@ include ':act-register-compiler'
 include ':app'
 rootProject.name = "AndroidTraining"
 include ':common-lib'
+include ':anr-water'

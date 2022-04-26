@@ -4,9 +4,9 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.ViewModel
+import com.utopia.anr.water.cache.Record
 import com.wuliqinwang.android.BR
 import com.wuliqinwang.android.R
-import com.wuliqinwang.android.anr.monitor.cache.Record
 
 // 记录数据适配器
 class RecordDataAdapter(
